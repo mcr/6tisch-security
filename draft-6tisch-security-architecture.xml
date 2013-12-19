@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd">
+<?rfc toc="yes"?>
+<?rfc symrefs="yes"?>
+
+<rfc category="info" ipr="trust200902" docName="draft-richardson-6tisch-security-architecture-00">
+
+<front>
+  <title abbrev="6tisch-security">
+      security architecture for 6top: requirements and structure
+  </title>
+
+  <author initials="M." surname="Richardson" fullname="Michael C. Richardson">
+    <organization abbrev="SSW">Sandelman Software Works</organization>
+    <address>
+      <postal>
+        <street>470 Dawson Avenue</street>
+        <city>Ottawa</city>
+        <region>ON</region>
+        <code>K1Z 5V7</code>
+        <country>CA</country>
+      </postal>
+      <email>mcr+ietf@sandelman.ca</email>
+      <uri>http://www.sandelman.ca/</uri>
+    </address>
+  </author>
+
+  <date month="December" year="2013" />
+
+<abstract>
+  <t>
+    This document details minimal layer-2 requirements for 6top use in
+    industrial settings, and a few options for accomplishing this.
+    The layer-2 mechanism is then extended to provide for per-node
+    authentication and authorization of the node/PCE communications.
+    This internet-draft is intended for later inclusion into the 6tisch
+    architecture document.
+  </t>
+</abstract>
+
+</front>
+
+<middle>
+
+<section title="Introduction: security bootstrap requirements">
+<t>
+</t>
+<section title="Requirements Language">
+  <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+  "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
+  document are to be interpreted as described in <xref
+  target="RFC2119">RFC 2119</xref>.</t>
+</section>
+
+<section title="possible layer-2 mechanism">
+</section>
+
+<section title="6top/PCE security requirements">
+</section>
+
+<section title="leveraging layer-2 identies for layer-4 security">
+<t>
+</t>
+</section>
+
+<section title="Security Considerations">
+  <t>
+  </t>
+</section>
+
+<section title="Other Related Protocols"></section>
+<section title="IANA Considerations">
+<t>
+</t>
+</section>
+<section title="Acknowledgements"></section>
+<section title="References">
+  <section title="Informative References"></section>
+  <section title="Normative References"></section>
+</section>
+
+</middle>
+
+<back>
+<references title="Normative references">
+<?rfc include="reference.RFC.2119" ?>
+</references>
+</back>
+</rfc>
