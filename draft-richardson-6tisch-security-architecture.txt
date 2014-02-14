@@ -4,8 +4,8 @@
 
 Network Working Group                                      M. Richardson
 Internet-Draft                                                       SSW
-Intended status: Informational                         December 18, 2013
-Expires: June 21, 2014
+Intended status: Informational                             December 2013
+Expires: June 04, 2014
 
 
        security architecture for 6top: requirements and structure
@@ -35,7 +35,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on June 21, 2014.
+   This Internet-Draft will expire on June 04, 2014.
 
 Copyright Notice
 
@@ -53,7 +53,7 @@ Copyright Notice
 
 
 
-Richardson                Expires June 21, 2014                 [Page 1]
+Richardson                Expires June 04, 2014                 [Page 1]
 
 Internet-Draft               6tisch-security               December 2013
 
@@ -72,18 +72,23 @@ Table of Contents
 
    1.  Introduction: security bootstrap requirements . . . . . . . .   2
    2.  Requirements Language . . . . . . . . . . . . . . . . . . . .   2
-   3.  possible layer-2 mechanism  . . . . . . . . . . . . . . . . .   2
+   3.  layer-2 security requirements . . . . . . . . . . . . . . . .   2
    4.  6top/PCE security requirements  . . . . . . . . . . . . . . .   2
    5.  leveraging layer-2 identies for layer-4 security  . . . . . .   2
-   6.  Security Considerations . . . . . . . . . . . . . . . . . . .   2
-   7.  Other Related Protocols . . . . . . . . . . . . . . . . . . .   3
-   8.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   3
-   9.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .   3
-   10. References  . . . . . . . . . . . . . . . . . . . . . . . . .   3
-     10.1.  Informative References . . . . . . . . . . . . . . . . .   3
-     10.2.  Normative References . . . . . . . . . . . . . . . . . .   3
-   11. Normative references  . . . . . . . . . . . . . . . . . . . .   3
-   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .   3
+   6.  option 1: The ZigBeeIP/PANA way . . . . . . . . . . . . . . .   2
+     6.1.  Network Discovery . . . . . . . . . . . . . . . . . . . .   3
+     6.2.  PANA protocol . . . . . . . . . . . . . . . . . . . . . .   3
+     6.3.  Authorization . . . . . . . . . . . . . . . . . . . . . .   3
+   7.  option 2: The WirelessHart/ISA100 way . . . . . . . . . . . .   3
+   8.  Security Considerations . . . . . . . . . . . . . . . . . . .   4
+   9.  Other Related Protocols . . . . . . . . . . . . . . . . . . .   4
+   10. IANA Considerations . . . . . . . . . . . . . . . . . . . . .   4
+   11. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .   4
+   12. References  . . . . . . . . . . . . . . . . . . . . . . . . .   4
+     12.1.  Informative References . . . . . . . . . . . . . . . . .   4
+     12.2.  Normative References . . . . . . . . . . . . . . . . . .   4
+   13. Normative references  . . . . . . . . . . . . . . . . . . . .   4
+   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .   4
 
 1.  Introduction: security bootstrap requirements
 
@@ -93,43 +98,104 @@ Table of Contents
    "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
    document are to be interpreted as described in RFC 2119 [RFC2119].
 
-3.  possible layer-2 mechanism
+3.  layer-2 security requirements
 
 4.  6top/PCE security requirements
 
 5.  leveraging layer-2 identies for layer-4 security
 
-6.  Security Considerations
+6.  option 1: The ZigBeeIP/PANA way
 
 
 
 
-
-
-
-
-
-Richardson                Expires June 21, 2014                 [Page 2]
+Richardson                Expires June 04, 2014                 [Page 2]
 
 Internet-Draft               6tisch-security               December 2013
 
 
-7.  Other Related Protocols
+   This is an adaptation of the process described in [ZigBeeIP], section
+   and expounded upon in section 6.3: "Network Discovery", 6.4: "Network
+   Selection", and 6.5, "Node Joining".  The process is abridged below.
 
-8.  IANA Considerations
+6.1.  Network Discovery
 
-9.  Acknowledgements
+   The MAC beacon facility is used.  A critical difference in 6tisch
+   from ZigBee IP is that because nodes transmit and receive according
+   to their own schedule, every node is in essence a coordinator.  While
+   nodes may sleep a lot, they will not in general be sleep Hosts, from
+   a ZigBee IP point of view, and MLE is not necessary.
 
-10.  References
+   Each response to the Beacon is a potential network-joining-parent.
 
-10.1.  Informative References
+   As an option, it may be desireable for this document to define a well
+   known NetworkID.
 
-10.2.  Normative References
+6.2.  PANA protocol
 
-11.  Normative references
+   The PANA payloads MUST be relayed by the chosen network-joining-
+   parent.  It is assumed that the PANA Authentication Agent is co-
+   located with the PCE, if there is a PCE.
+
+   As per section 8.3.4 of [ZigBeeIP], the PANA process runs over UDP
+   using link-layer addressing.  The process is first the PANA
+   initialization (PCI, PAR:S, PAN:S), followed by EAP initialization
+   (EAP-Request, EAP-Response), which negotiates the identity, and then
+   EAP-TLS starts, consisting of (TLS(Start), TLS(ClientHello),
+   TLS(ServerHello), TLS(ServerKeyExchange), TLS(ClientKeyExchange), and
+   TLS(ChangeCipherSpec)).
+
+   When the TLS is done, the EAP derives new network security material,
+   and sends it encrypted using the Encr-Encap AVP described in
+   [RFC6786].
+
+6.3.  Authorization
+
+   QUESTION: can we find a way for the authorization protocol, such as
+   described in draft-gerdes-core-dcaf-authorize-01, to run
+   simultaenously with the authentication system if we assume that the
+   dcaf AS is also the PANA Authentication Server/Agent
+
+   In the context of draft-selander-core-access-control, the new node
+   that is joining is the resource server, and the origin client is the
+   PCE.
+
+7.  option 2: The WirelessHart/ISA100 way
+
+
+
+
+Richardson                Expires June 04, 2014                 [Page 3]
+
+Internet-Draft               6tisch-security               December 2013
+
+
+8.  Security Considerations
+
+9.  Other Related Protocols
+
+10.  IANA Considerations
+
+11.  Acknowledgements
+
+12.  References
+
+12.1.  Informative References
+
+12.2.  Normative References
+
+13.  Normative references
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119, March 1997.
+
+   [ZigBeeIP]
+              ZigBee Public Document 15-002r00, "ZigBee IP
+              Specification", 2013.
+
+   [RFC6786]  Yegin, A. and R. Cragie, "Encrypting the Protocol for
+              Carrying Authentication for Network Access (PANA)
+              Attribute-Value Pairs", RFC 6786, November 2012.
 
 Author's Address
 
@@ -155,14 +221,4 @@ Author's Address
 
 
 
-
-
-
-
-
-
-
-
-
-
-Richardson                Expires June 21, 2014                 [Page 3]
+Richardson                Expires June 04, 2014                 [Page 4]

@@ -1,4 +1,4 @@
-VERSION=00
+VERSION=01
 DRAFT=draft-richardson-6tisch-security-architecture
 
 ${DRAFT}-${VERSION}.txt: ${DRAFT}.txt

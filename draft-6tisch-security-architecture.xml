@@ -1,9 +1,15 @@
 <?xml version="1.0"?>
-<!DOCTYPE rfc SYSTEM "rfc2629.dtd">
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
+<!ENTITY ZigBeeIP SYSTEM "http://www.sandelman.ca/rfc/xml/reference.ZigBeeIP.xml">
+<!ENTITY RFC6786 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.6786.xml">
+]>
+
 <?rfc toc="yes"?>
 <?rfc symrefs="yes"?>
 
 <rfc category="info" ipr="trust200902" docName="draft-richardson-6tisch-security-architecture-00">
+
+
 
 <front>
   <title abbrev="6tisch-security">
@@ -45,6 +51,7 @@
 <section title="Introduction: security bootstrap requirements">
 <t>
 </t>
+</section>
 <section title="Requirements Language">
   <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
   "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
@@ -52,7 +59,9 @@
   target="RFC2119">RFC 2119</xref>.</t>
 </section>
 
-<section title="possible layer-2 mechanism">
+<section title="layer-2 security requirements">
+<t>
+</t>
 </section>
 
 <section title="6top/PCE security requirements">
@@ -61,6 +70,60 @@
 <section title="leveraging layer-2 identies for layer-4 security">
 <t>
 </t>
+</section>
+
+<section title="option 1: The ZigBeeIP/PANA way">
+<t>
+This is an adaptation of the process described in <xref target="ZigBeeIP"/>, section
+and expounded upon in section 6.3: "Network Discovery", 6.4: "Network Selection", and 6.5, "Node Joining".
+The process is abridged below.
+</t>
+<section title="Network Discovery">
+<t>
+The MAC beacon facility is used.  A critical difference in 6tisch from ZigBee IP is that
+because nodes transmit and receive according to their own schedule, every node is in
+essence a coordinator.  While nodes may sleep a lot, they will not in general be sleep Hosts, from a
+ZigBee IP point of view, and MLE is not necessary.
+</t>
+<t>
+Each response to the Beacon is a potential network-joining-parent.
+</t>
+<t>
+As an option, it may be desireable for this document to define a well known NetworkID.
+</t>
+</section>
+
+<section title="PANA protocol">
+<t>
+The PANA payloads MUST be relayed by the chosen network-joining-parent.  It is assumed that the
+PANA Authentication Agent is co-located with the PCE, if there is a PCE.
+</t>
+<t>
+As per section 8.3.4 of <xref target="ZigBeeIP"/>, the PANA process runs over UDP using link-layer
+addressing.  The process is first the PANA initialization (PCI, PAR:S, PAN:S),
+followed by EAP initialization (EAP-Request, EAP-Response), which negotiates the identity,
+and then EAP-TLS starts, consisting of (TLS(Start), TLS(ClientHello), TLS(ServerHello),
+TLS(ServerKeyExchange), TLS(ClientKeyExchange), and TLS(ChangeCipherSpec)).
+</t>
+<t>
+When the TLS is done, the EAP derives new network security material, and sends it encrypted
+using the Encr-Encap AVP described in <xref target="RFC6786"/>.
+</t>
+</section>
+<section title="Authorization">
+<t>
+QUESTION: can we find a way for the authorization protocol, such as described in draft-gerdes-core-dcaf-authorize-01, to run simultaenously with the authentication system if we assume that the dcaf AS
+is also the PANA Authentication Server/Agent
+</t>
+<t>
+In the context of draft-selander-core-access-control, the new node that is joining is the resource server,
+and the origin client is the PCE.
+</t>
+</section>
+
+</section>
+
+<section title="option 2: The WirelessHart/ISA100 way">
 </section>
 
 <section title="Security Considerations">
@@ -84,6 +147,8 @@
 <back>
 <references title="Normative references">
 <?rfc include="reference.RFC.2119" ?>
+      &ZigBeeIP;
+      &RFC6786;
 </references>
 </back>
 </rfc>
