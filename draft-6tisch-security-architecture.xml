@@ -2,6 +2,10 @@
 <!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
 <!ENTITY ZigBeeIP SYSTEM "http://www.sandelman.ca/rfc/xml/reference.ZigBeeIP.xml">
 <!ENTITY RFC6786 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.6786.xml">
+<!ENTITY I-D.roll-security-threats SYSTEM "http://xml.resource.org/public/rfc/bibxml3/reference.I-D.ietf-roll-security-threats.xml">
+<!ENTITY I-D.behringer-autonomic-network-framework SYSTEM "http://xml.resource.org/public/rfc/bibxml3/reference.I-D.behringer-autonomic-network-framework">
+<!ENTITY I-D.gerdes-core-dcaf-authorize SYSTEM "http://xml.resource.org/public/rfc/bibxml3/reference.I-D.gerdes-core-dcaf-authorize">
+
 ]>
 
 <?rfc toc="yes"?>
@@ -42,6 +46,7 @@
     This internet-draft is intended for later inclusion into the 6tisch
     architecture document.
   </t>
+<t>This might be the worst written internet draft yet. You have been warned</t>
 </abstract>
 
 </front>
@@ -61,14 +66,46 @@
 
 <section title="layer-2 security requirements">
 <t>
+As outlined in <xref target="I-D.ietf-roll-security-threats"/> there are a number of threats in LLNs,
+and in RPL which are solved if there is layer-2 security.  The requirement is therefore to provide
+keying for the layer-2 security features: encryption and integrity protection.
+</t>
+<t>
+In addition to serving to protect the routing traffic against attacks, use of the layer-2 access
+control serves as adminission control to the network.  It is therefore part of the layer-2 join process
+to authenticate the new node, as well as authorize it to join the network.  The admission control
+SHOULD be controlled by autonomic certificates, see section X.
 </t>
 </section>
 
 <section title="6top/PCE security requirements">
+<t>
+In addition to authorization a node to join the network, the node agree to provide authorization
+to a PCE in order for the 6top protocol to run.  This protocol, described in section X of 6tisch
+architecture (this) document and in [6top], permits the PCE to program a timeslot schedule into the node.
+</t>
+<t>
+So, the second part of the 6tisch security requirements is to establish the identities of the the
+node and the PCE, and to establish an authorization that permits the new node to be programmed by the PCE.
+</t>
 </section>
 
-<section title="leveraging layer-2 identies for layer-4 security">
+<section title="leveraging layer-2 identities for layer-4 security">
 <t>
+As explained in <xref target="I-D.behringer-autonomic-network-framework"/> the layer-2 identity of the
+node will be given by a certificate signed by the vendor of the node.  The vendor's certificate authority
+is loaded into the (PANA) Authorization Server, and permits the AS to authenticate the node.
+</t>
+<t>
+The vendor provides a certificate (chain) to the (PANA) Authorization Server (PAS) attesting to that the
+PAS is the rightful owner/controller of the node.  This permits the node to validate that the network
+it is joining is the correct network.  This process permits the bootstrap of one of the
+layer-2 security mechanism(s) describe in sections below.
+</t>
+<t>
+The same set of trust relationships can then permit the PAS to act as an Authorization Server (now, in the context of <xref target="I-D.gerdes-core-dcaf-authorize"/>).  The PCE and it's Authorization Manager
+(AM, again from  <xref target="I-D.gerdes-core-dcaf-authorize"/>) can now get a ticket to permit it to
+write the timeslot schedule.  In option 2, below, it also permits updates to the security parameters.
 </t>
 </section>
 
@@ -124,6 +161,29 @@ and the origin client is the PCE.
 </section>
 
 <section title="option 2: The WirelessHart/ISA100 way">
+<t>
+This is an adaptation of the process described in <xref target="HART"/>, section 6.6.3.
+</t>
+<t>
+In this process, the new node joins using a well-known layer-2 "JOIN" key.  It brings up
+the layer-3, using 6loWPAN Neighbour Discovery to learn of the 6lowpan contexts, and then
+uses RPL to join a well-known DODAG as a leaf node. </t>
+<t>Nodes which have capacity for new joining nodes will respond to the RPL DIS messages.
+Once connected, the new node uses regular unicasted IP datagrams to contact an Authorization Manager
+(in the context of <xref target="I-D.gerdes-core-dcaf-authorize"/>).  The negotiation with the
+Authorization Manager (AM) uses the autonomic certificates as described above to establish the trust
+relationship.
+</t>
+<t>
+Once the relationship is up, the AM needs to signal the PCE that it has a new authorized node,
+and the PCE can now (acting as a <xref target="I-D.gerdes-core-dcaf-authorize"/> Client), get a Ticket to update
+the node.
+</t>
+<t>
+The PCE then writes both a new timeslot schedule, and also writes new security parameters that permit the node
+to fully join the network.  Appropriate layer-2 keys are updated, as well as any appropriate layer-3 RPL credentials.
+MLE may be used to establish pair-wise keying, as appropriate to the timeslot schedule.
+</t>
 </section>
 
 <section title="Security Considerations">
@@ -137,10 +197,6 @@ and the origin client is the PCE.
 </t>
 </section>
 <section title="Acknowledgements"></section>
-<section title="References">
-  <section title="Informative References"></section>
-  <section title="Normative References"></section>
-</section>
 
 </middle>
 
@@ -149,6 +205,36 @@ and the origin client is the PCE.
 <?rfc include="reference.RFC.2119" ?>
       &ZigBeeIP;
       &RFC6786;
+      &I-D.roll-security-threats;
+      &I-D.behringer-autonomic-network-framework;
+      &I-D.gerdes-core-dcaf-authorize;
+      <reference anchor="HART">
+        <front>
+          <title>Highway Addressable Remote Transducer, a group of
+          specifications for industrial process and control devices
+          administered by the HART Foundation</title>
+
+          <author>
+            <organization>www.hartcomm.org</organization>
+          </author>
+
+          <date></date>
+        </front>
+      </reference>
+
+      <reference anchor="ISA100.11a"
+                 target="     http://www.isa.org/Community/SP100WirelessSystemsforAutomation">
+        <front>
+          <title>ISA100, Wireless Systems for Automation</title>
+
+          <author>
+            <organization>ISA</organization>
+          </author>
+
+          <date day="05" month="May" year="2008" />
+        </front>
+      </reference>
 </references>
+
 </back>
 </rfc>
