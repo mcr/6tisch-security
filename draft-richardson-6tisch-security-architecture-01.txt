@@ -4,12 +4,12 @@
 
 Network Working Group                                      M. Richardson
 Internet-Draft                                                       SSW
-Intended status: Informational                             December 2013
-Expires: June 04, 2014
+Intended status: Informational                            March 03, 2014
+Expires: September 04, 2014
 
 
        security architecture for 6top: requirements and structure
-            draft-richardson-6tisch-security-architecture-00
+            draft-richardson-6tisch-security-architecture-01
 
 Abstract
 
@@ -38,11 +38,11 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on June 04, 2014.
+   This Internet-Draft will expire on September 04, 2014.
 
 Copyright Notice
 
-   Copyright (c) 2013 IETF Trust and the persons identified as the
+   Copyright (c) 2014 IETF Trust and the persons identified as the
    document authors.  All rights reserved.
 
    This document is subject to BCP 78 and the IETF Trust's Legal
@@ -53,9 +53,9 @@ Copyright Notice
 
 
 
-Richardson                Expires June 04, 2014                 [Page 1]
+Richardson             Expires September 04, 2014               [Page 1]
 
-Internet-Draft               6tisch-security               December 2013
+Internet-Draft               6tisch-security                  March 2014
 
 
    to this document.  Code Components extracted from this document must
@@ -109,9 +109,9 @@ Table of Contents
 
 
 
-Richardson                Expires June 04, 2014                 [Page 2]
+Richardson             Expires September 04, 2014               [Page 2]
 
-Internet-Draft               6tisch-security               December 2013
+Internet-Draft               6tisch-security                  March 2014
 
 
    In addition to authorization a node to join the network, the node
@@ -165,9 +165,9 @@ Internet-Draft               6tisch-security               December 2013
 
 
 
-Richardson                Expires June 04, 2014                 [Page 3]
+Richardson             Expires September 04, 2014               [Page 3]
 
-Internet-Draft               6tisch-security               December 2013
+Internet-Draft               6tisch-security                  March 2014
 
 
    As an option, it may be desireable for this document to define a well
@@ -221,9 +221,9 @@ Internet-Draft               6tisch-security               December 2013
 
 
 
-Richardson                Expires June 04, 2014                 [Page 4]
+Richardson             Expires September 04, 2014               [Page 4]
 
-Internet-Draft               6tisch-security               December 2013
+Internet-Draft               6tisch-security                  March 2014
 
 
    Once the relationship is up, the AM needs to signal the PCE that it
@@ -277,9 +277,9 @@ Internet-Draft               6tisch-security               December 2013
 
 
 
-Richardson                Expires June 04, 2014                 [Page 5]
+Richardson             Expires September 04, 2014               [Page 5]
 
-Internet-Draft               6tisch-security               December 2013
+Internet-Draft               6tisch-security                  March 2014
 
 
               gerdes-core-dcaf-authorize-02 (work in progress), February
@@ -333,4 +333,4 @@ Author's Address
 
 
 
-Richardson                Expires June 04, 2014                 [Page 6]
+Richardson             Expires September 04, 2014               [Page 6]
