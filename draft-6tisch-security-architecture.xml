@@ -11,7 +11,7 @@
 <?rfc toc="yes"?>
 <?rfc symrefs="yes"?>
 
-<rfc category="info" ipr="trust200902" docName="draft-richardson-6tisch-security-architecture-01">
+<rfc category="info" ipr="trust200902" docName="draft-richardson-6tisch-security-architecture-02">
 
 
 
@@ -35,7 +35,7 @@
     </address>
   </author>
 
-  <date month="March" year="2014" />
+  <date month="April" year="2013" />
 
 <abstract>
   <t>
@@ -46,7 +46,6 @@
     This internet-draft is intended for later inclusion into the 6tisch
     architecture document.
   </t>
-<t>This might be the worst written internet draft yet. You have been warned</t>
 </abstract>
 
 </front>
@@ -157,6 +156,219 @@ In the context of draft-selander-core-access-control, the new node that is joini
 and the origin client is the PCE.
 </t>
 </section>
+<section title="Advantages of the EAP-TLS based methods">
+* JS: that;s what the base standard specifies. Contention-based medium, slotted Aloha style, you will only have 1-3 of the number of cells available to get usable bandwidth. This restrictyion only when multiple devices are joining.
+* MR: just 1.5 slots per slotframe?
+* JS: yes, about 36% of BW.
+* MR: base on calculation, between 10-15s for each node to join?
+
+* JS: calculation 30min for 10-hop 100-node network
+
+* JS: dynamics will be slightly different
+* MR: calculation assumes 300 bytes for certificate
+
+* MR: if communication needed up the tree, you need to provision tha BW using 6TiSCH. We could reserve that BW, then remove it later on.
+* JS: assume any reasonable system would do.
+* MR: can we assume a large more BW in core? Is this reasonable
+* JS: design trade-off between many elements. More like individual system design tradeoff
+* MR: how much of the rest of the slots are available? ()%+?
+* JS: yes?
+* SD: clarifying, if only 1-hop peer, how running DTLS?
+* JS: assumption is node gets authentication. One of the reasons TLS mechanisms just to get on NW, because will need same mechanism to send data
+* JS: assumption: server may be multiple hops away, separate the joining problem from steady state problems. What are we trying to solve to get device ontothe network. Siomply able to send data to PCE, or trying to get it to point where has DTLS session to data sink. We haven't defined what we mean by joining. What would it take a device to konw nothing about NW to send beacons on its own, independent from being able to send data.
+* SD: in that sense, should we think about, if a node can connectto a peer node which is already part othe network. If new node can authenticate with old node, could be partof it.
+* JS: possibility,but not necessarily cut down on nmber of packets to be sent. If assume network has been provisioned probably, it's the number of frames that matter, more than whether has to go multiple hops.
+* JS: in WHART, all frames sent to centralized manager to set up tyransport session. Primary different is tha the number fo frame is very small (1 frame up, 1 frame down) to get transport session started.
+* RS: suppose we are able to bring down the size of join messages to 4, (2 up, 2 down), why would that problem be so different from operational use. Don't understand why security would be such a big factor. If we have problems at this level, maybe communication is the issue./
+* JS: there was a discussion about segregating joining traffic from data traffic. You would prevent DoS by restricting those traffics. Agree that, if you're willing to mingle flow, joining BW is just another piece fo traffic, and set up the network accordingly.
+* RS: talking about different joining NW?
+* MR: if ou set up network to support 10 queries per s, security operation would be 11th query? WOuld be very nice, but because these nodes haven't been authenticated, we cannot open dedicated cell, we need to protect that BW very clearly. Because we have so little excess BW.
+* HM: endpoints will not be powered up all the time.
+* MR: assumption provisioning of L2 network key, we have been discussion on protocols to provision this key.
+* HM: join is to help nodes get this key? Confused since assumes motes would know key. If they don't know universal key, any device would have to know list of device cert from that domain. Would need to be pre-configure, more complex?
+* MR: we have made a larhe assumption: we beleive we will use 1AR cert process. Device provisioned with cert+priv key. Chain of certs so network can authenticate itself to the device, and back.
+* RS: maybe assumption of onlin cert verification protocol wrong in these networks.
+* MR: we are not talking specifically about specific online protocol. Donig 3-4 cert verification is not hard for IoT device.
+* RS: main problem has to do with communication flows and how many time slots. No problem if unlimited BW. In WHART, one communicatino up, one down. We can do authentication step, authorization, then manage schedule. Possible to keep all flows local, and have proxy send data once. Would that solve JS problem?
+* MR: process described is not dissimiamlto EAP-TLS. Question: in WHART messages, any assymetric operation where node validate, or based on pre-provisioning.
+* JS: correct, WHART has pre-shared key, no validation based on certs.
+* MR: symmetric encrypted iwth pre-shared keys.
+* JS: yes
+* MR: eliminated the problem of authenticating nodes. THis means that you order nodes from manufactured, someone has to pre-provision key.
+* JS: can only speak to our product. Operator (not necessarily manufact.) sets security material through API. Something thta could be done at factory. HART provides commands to specify keying material at run-time.
+* MR: key point is that device has pre-existing relationship with factiry.
+* JR: yes, or configured on-site.
+* MR: technician has equipment?
+* JS: can be done in-band, or through configuration using hand-held device.
+* _[07.50]_ MR: like to self-criticize this mechanism. What's wrong with WHART model?
+* JS: limitation is that you cannot cleanly separate joining flows from steady-state flws in the netowkr. You can take device from box, which will disrupt data traffic. In a typical HART network, amount of BW for joining is really low. Limitation, no external validation of the manager's ID, other than it posesses the right key.
+* MB: question on thread model. Are we worried about a device on factory floor which floods network and DoS? Specific to security?
+* JS: it's one thread?
+* TW: 6TiSCH van provide isolation
+* RS:
+* MR: controller can take over part of the network. We don't think tha the model od symmetric key provisioning is going to work in touchless networks.
+* JS: agree
+* TW: agree
+* MR: different
+* MR: useful, what's I'm trying to do is get on same page. We're working on getting to understand different assumption
+> Action utem: MR to send out draft
+* MR: next call is next Monday
+* _[08.02]_ meeting ends
+
+in this specification, we are going to say that joining messages will go over a different slot/colour, and therefore join messages can not overrun the network.
+
+
+PREVIOUS MINUTES:
+
+FOCUS ON CONs of Wireless Hart-inspired method
+
+assumption:
+mote runs CoAP and DTLS already for 6top, and also for actual sensors/actuators
+802.1AR, "immuntable device identity" is origin of trust relationship (almost ubiquitous in AMI GRID)
+
+WIRELESSHART/JOIN NETWORK METHOD (whether ND ARO or RPL DIO)
+
+PRO:
+reuses existing CoAP and DTLS code base.
+
+CON:
+requires layer-3/layer-4 to be operating.
+
+1X/PANA METHOD.
+
+PRO:
+specified by Zigbee IP
+common authorization infrastructure with Zigbee IP.
+minimizes attack footprint
+deals with DoS on network traffic much earlier
+
+CON:
+requires EAP, TLS
+code is used only once to get on the network
+
+
+* _[07.12]_ Michael introduces agenda. Makes sure all on Etherpad.
+* Pros and cons of EAP-TLS method (whether over PANA or 1X), vs. "separate" join network with object model with 6top protocol and data collection/actuation
+* Comments on 1X from Paul Duffy. IEEE802.15.9 group is chartered to design something similar to 1X in IEEE802.15.4 space.
+* Rene comments about 15.9
+* 15.9 securitry WG from IEEE.
+* [RS] started several years ago. This KMP group codifies method to transfer key management messages.
+* [MR] functionaly equivalent to PANA
+* [RS] any technical work? Not equivalent to PANA.
+* [??] PANA can carry 1X-type messages over L3
+* [SD] understand is that 15.9 is not chartered to design mechanism similar to PANA. Not sure we should call is as chartered to design simething similat to PANA
+* [MR] discussion with Bob indicating 15.9 will allow to transport PANA like messages
+* [MR] does not matter, let's discuss at some other time. You have a client which wants to join; EAP-TLS, you get a network key through that process allowing the mote to join the network. ONly reason to talk about 15.9 because Paul Duffy indicated preferref 1X instead of PANA.
+* **Michael** updates list of pro/con
+* []
+* []Conceivably TLS and DTLS can share a lot of code though they are different services
+* [RS] Technical argument for preferring 1X?
+* [MR] pre-existance of deployments/customers. Preference.
+* [PT] we want to understand what properties we want to get and the cost for getting there, 1x vs. PANA is not the question for now
+* [MR] you have to have EAP and TLS code in mote
+* [SD] are we assumiong that mote will run CoAP interface?
+* [MR] yes, at least because 6top interface on top of CoAP
+motes and auth servers from different vendors. We don't expect people to handle mote to authenticate, needs to be much more automated. 1AR is routinely done by companies such as Verizon for VoIP phones; there are products which use that
+* [SD] are we trying to lock down the device to a particular vendor?
+* [MR] initial transfer between vendor and user. from APIs in 1AR, nce the initial owner takes ownership, possibility to change identity so doesn't need it to talk to vendor. Allows transfering ownership
+* [SD] we could just think of it as a certificate. We should have different options
+* [SD] different options
+* [MR] other mechanisms like tranfering ownership can be added to talk. Crux is for mote to be able to validate certificate chain.
+* [MR] the mote is able to validate a variaty of certificate statements.
+* [PD] about 1AR, let's not assume that its perfect. May need to be modified, but string guidance to IoT space.
+* [MR] moved on. we spent lot of time on PANA/1AR. round table.
+* [YO] opinion is that don't disagree with supprting 1AR, would be good to support also pre-shared key for authentication. supporting EAP can fit
+* [MR] can you write as e-mail?
+* [Yoshi]: don't disagree supporting 1x but preshared key auth should be supported as well;
+* [Tom] nothing to add. concenrned with scalability and replacement. But think those issues are being addressed eg by Ren?. Tend to agree wit the cisco concenrns about scalability.
+* [MR] about scalability?
+* [Tom] issues of scalability and deployment and replacement. Tends to agree with Cisco concerns about scalability.
+* [Thomas] was taking notes. interesting discussion.... leaning towards side that all of our data is transported over CoAP.
+* []data transported over coap. also coap to the PCE. CoAp os not optional, has to be there and secured.Reusing it for join reduces the footprint in the motes.
+Good and provenb technology. Let's onctinue the discussion/
+* [Subir] nothing to add
+* [Ren?] look at flexible auth and device replacement
+* [Jonathan] scalability and not having protocols that require 10 passes to just get ready to send data
+* [Paul]
+* [PT] concerned that we are looking are solution, but we haven't documented requirement space. not clear we cover all requirements. Happy to keep in mind Michael B. Anything else we are missing?
+* [MR] we are having a call next week, then skipping a week. we resume on 4/2. please send summary to
+please email to the 6TiSCH list and send a summary
+6TISCH SECURITY ARCHITECTURE
+
+assumption:
+mote runs CoAP and DTLS already for 6top, and also for actual sensors/actuators
+802.1AR, "immuntable device identity" is origin of trust relationship (almost ubiquitous in AMI GRID)
+
+
+1X/PANA METHOD.
+
+PRO:
+specified by Zigbee IP
+common authorization infrastructure with Zigbee IP.
+minimizes attack footprint
+deals with DoS on network traffic much earlier
+
+CON:
+requires EAP, TLS
+code is used only once to get on the network
+
+WIRELESSHART/JOIN NETWORK METHOD (whether ND ARO or RPL DIO)
+
+PRO:
+reuses existing CoAP and DTLS code base.
+
+CON:
+requires layer-3/layer-4 to be operating.
+
+* [SD] if runs CoAP, will have DTLS by default?
+* [MR] will assume runs CoAP for sensors/actuators.
+* [JS] sounds reasonable. If CoAP is mechanisms that devices use for data and manavement, than joining model which stays close to that is a good idea. Simple solutions that don't have a lot of exatr layer or parallel technologies is better.
+* [MR] have written down as PRO. Anybody has recommendation for 1X/PANA method?
+> No answer.
+* [MR] ZIP has been shipping devices with the PANA/1X approach
+* [MR] once you get to authorization server, EAP-TLS is used, regardless of whether you come in through PANA or 1X. Same thing.
+* [SD] this framework does allow for centralized/distributed case. ZIP has some relay functionality to reach auth server if not a single hop away
+* [MR] provides by fast that use PANA of link-layer address. proxy uses PANA to contact authorization server. The ajacent node relay the information through the mesh to the auth server. At that point, it's PANA. With 1X, something else? Probably radius or something else.
+* [SD] normally done by radius in WiFi case
+* [MR] yes, but single hop and not thousands of authenticators talking to radius server.
+* [PD] couple of points: PANA or 1X both needs to be relayed. PAAN relayes has been RFCed, not a problem. From a radius/relaying standpoint, PAdNA and 1X are very similar.
+* Michael summarizes: discussion PANA/1X (EAP-TLS) solution vs. method with uses CoAP/DTLS and YANG model similar to WHART
+* [MR] EAP-TLS over something. If someone has ZIP auth infra for lighting, they could use it for plant. Same technology. Agreed that having common infrastructure is a feature?
+* [PD] not a lot of ZIP deployed. Cisco not a fan of PANA in ZIP, many devices that use 1X. Cisco tries to use things off the shelf. 1X is smaller footprint
+* [PD] CoAP/DTLS brand new?
+* [PD] no running code for IP but wireless HART does it that way just not over IP, just over layer 2.
+* [PD] people inside Cisco might not like that at all because all the way up to L4. minimal amount of footprint is preference.
+* [PD] minimize attack footprints by strictly L2 approach 1x.
+* [JS] L2 from 15.4 perspective?
+* [PD] yes
+* [PD] if solution relies on L2, L3 and L4, than most of the stack needs to be functioning
+* [MR] about footprint: robot requires CoAP/DTLS to run for application
+* [PD] security compromise, cannot answer directly. you would be making compromise.
+* [JS] if the machanism that all are happy with to send data is not the same one as the one used to join network then security concern for join is principally for blocking denial of service. you need to through those steps to send data. That looks like what we need to decide: DoS vs. simplifying
+* [PD] utility answer: L2 access control is one the last thi. immutable device identify: related to IEEE802.15.1AR
+* [MR] assumes 1AR can be used in all of solution. No other standard solution as mature as 1AR.
+* [PD] think correct, ccould ask authors. involves with ZIP, 802.1AR, smart grid issues.
+* [PD] has been implemented most in grid
+* [RS] question 1AR: don't understand what is so special about it. Just certificate?
+* [PD] set of guidelines for strong device identity
+* [RS] uses SHA1, deprecated? AR provides mech to issue cert find which device belongs to which entity
+* [MR]
+
+* [MR] specifies RSA method and
+* [PD] not just certificate method, random number
+* [MR] also mechanism to update and replace certificate to create new device IDs. Seems that are all piece needed: acccept mote, replace, obsolete, change ownership, etc.
+* [RS] we need more precision. Have no way what is being discussed aboiut whgat matters and what is missing.
+* [PD] happy to read specification different from 1AR
+* [MR] question is not whether 1AR is good/bad. It exists. Question is: given what 1AR gives us, how can be transport the network claim to the mote and the auth claim of the mote. One of standard protocolos is PANA or 1Z transport of EAP-TLS. Other mechanisms is to use the certificates 1AR gives us directly in DTLS. In 6TiSCH, if we have a PCE, the PCE needs to program schedule in motes. PCE need su access to motes, 1AR certificates provide that ownership statement. We need interoperability between ])]")])])')')')])
+</section>
+<section title="Challenges with this method">
+<list hangIndent="26" style="hanging">
+<t>number of messages</t>
+<t>size of certificate exchanges</t>
+<t>EAP and TLS code not used for anything else</t>
+<t>ability to support non-PCE case</t>
+</list>
+</section>
 
 </section>
 
@@ -184,6 +396,13 @@ The PCE then writes both a new timeslot schedule, and also writes new security p
 to fully join the network.  Appropriate layer-2 keys are updated, as well as any appropriate layer-3 RPL credentials.
 MLE may be used to establish pair-wise keying, as appropriate to the timeslot schedule.
 </t>
+<section title="Advantages of this method">
+</section>
+<section title="Challenges with the CoAP method">
+<list hangIndent="26" style="hanging">
+<t>new protocol to initiate layer-2</t>
+<t>potentially weaker resistance to layer-2 DoS</t>
+</section>
 </section>
 
 <section title="Security Considerations">
