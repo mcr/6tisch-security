@@ -4,24 +4,21 @@
 
 Network Working Group                                      M. Richardson
 Internet-Draft                                                       SSW
-Intended status: Informational                            March 03, 2014
-Expires: September 04, 2014
+Intended status: Informational                                April 2013
+Expires: October 03, 2013
 
 
        security architecture for 6top: requirements and structure
-            draft-richardson-6tisch-security-architecture-01
+            draft-richardson-6tisch-security-architecture-03
 
 Abstract
 
-   This document details minimal layer-2 requirements for 6top use in
-   industrial settings, and a few options for accomplishing this.  The
-   layer-2 mechanism is then extended to provide for per-node
-   authentication and authorization of the node/PCE communications.
-   This internet-draft is intended for later inclusion into the 6tisch
-   architecture document.
-
-   This might be the worst written internet draft yet.  You have been
-   warned
+   This document details security requirements for 6tisch nodes that use
+   6top in an industrial settings.  Layer-2 and a layer-4 authentication
+   and authorization requirements and assumptions are identified.  Two
+   approaches to accomplishing these requirements are outlined, with the
+   goal of eventually picking one.  This internet-draft is intended for
+   later inclusion into the 6tisch architecture document.
 
 Status of This Memo
 
@@ -38,26 +35,34 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on September 04, 2014.
+   This Internet-Draft will expire on October 03, 2013.
 
 Copyright Notice
 
-   Copyright (c) 2014 IETF Trust and the persons identified as the
+   Copyright (c) 2013 IETF Trust and the persons identified as the
    document authors.  All rights reserved.
+
+
+
+
+
+
+
+
+
+
+
+
+Richardson              Expires October 03, 2013                [Page 1]
+
+Internet-Draft               6tisch-security                  April 2013
+
 
    This document is subject to BCP 78 and the IETF Trust's Legal
    Provisions Relating to IETF Documents
    (http://trustee.ietf.org/license-info) in effect on the date of
    publication of this document.  Please review these documents
    carefully, as they describe your rights and restrictions with respect
-
-
-
-Richardson             Expires September 04, 2014               [Page 1]
-
-Internet-Draft               6tisch-security                  March 2014
-
-
    to this document.  Code Components extracted from this document must
    include Simplified BSD License text as described in Section 4.e of
    the Trust Legal Provisions and are provided without warranty as
@@ -65,54 +70,199 @@ Internet-Draft               6tisch-security                  March 2014
 
 Table of Contents
 
-   1.  Introduction: security bootstrap requirements . . . . . . . .   2
-   2.  Requirements Language . . . . . . . . . . . . . . . . . . . .   2
-   3.  layer-2 security requirements . . . . . . . . . . . . . . . .   2
-   4.  6top/PCE security requirements  . . . . . . . . . . . . . . .   2
-   5.  leveraging layer-2 identities for layer-4 security  . . . . .   3
-   6.  option 1: The ZigBeeIP/PANA way . . . . . . . . . . . . . . .   3
-     6.1.  Network Discovery . . . . . . . . . . . . . . . . . . . .   3
-     6.2.  PANA protocol . . . . . . . . . . . . . . . . . . . . . .   4
-     6.3.  Authorization . . . . . . . . . . . . . . . . . . . . . .   4
-   7.  option 2: The WirelessHart/ISA100 way . . . . . . . . . . . .   4
-   8.  Security Considerations . . . . . . . . . . . . . . . . . . .   5
-   9.  Other Related Protocols . . . . . . . . . . . . . . . . . . .   5
-   10. IANA Considerations . . . . . . . . . . . . . . . . . . . . .   5
-   11. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .   5
-   12. Normative references  . . . . . . . . . . . . . . . . . . . .   5
-   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .   6
+   1.  Introduction: secure bootstrap requirements . . . . . . . . .   2
+     1.1.  Requirements Language . . . . . . . . . . . . . . . . . .   3
+     1.2.  layer-2 join  . . . . . . . . . . . . . . . . . . . . . .   3
+     1.3.  Terminology . . . . . . . . . . . . . . . . . . . . . . .   4
+     1.4.  Use of 802.1AR certificates . . . . . . . . . . . . . . .   5
+     1.5.  6top/PCE security requirements  . . . . . . . . . . . . .   5
+       1.5.1.  no-PCE and 6LR to 6LR 6top authorization  . . . . . .   6
+   2.  leveraging layer-2 identities for layer-4 security  . . . . .   6
+   3.  option 1: The ZigBeeIP/PANA way . . . . . . . . . . . . . . .   6
+     3.1.  Network Discovery . . . . . . . . . . . . . . . . . . . .   6
+     3.2.  PANA protocol . . . . . . . . . . . . . . . . . . . . . .   7
+     3.3.  Authorization . . . . . . . . . . . . . . . . . . . . . .   7
+     3.4.  Advantages of the EAP-TLS based methods . . . . . . . . .   7
+     3.5.  Challenges with this method . . . . . . . . . . . . . . .  13
+   4.  option 2: The WirelessHart/ISA100 way . . . . . . . . . . . .  13
+     4.1.  Advantages of this method . . . . . . . . . . . . . . . .  14
+     4.2.  Challenges with the CoAP method . . . . . . . . . . . . .  14
+   5.  Security Considerations . . . . . . . . . . . . . . . . . . .  14
+   6.  Other Related Protocols . . . . . . . . . . . . . . . . . . .  14
+   7.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  14
+   8.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  14
+   9.  References  . . . . . . . . . . . . . . . . . . . . . . . . .  14
+     9.1.  Normative references  . . . . . . . . . . . . . . . . . .  14
+     9.2.  Informative references  . . . . . . . . . . . . . . . . .  16
+   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  16
 
-1.  Introduction: security bootstrap requirements
+1.  Introduction: secure bootstrap requirements
 
-2.  Requirements Language
+   There are five security problems that must be solved in the 6tisch
+   environment in order to permit the nodes to come together and
+   function as a network.  They are:
+
+       layer 2 join: new nodes must be recognized by the network, and
+       provided with layer-2 symmetric credentials
+
+
+
+
+
+Richardson              Expires October 03, 2013                [Page 2]
+
+Internet-Draft               6tisch-security                  April 2013
+
+
+       zero-touch join: new nodes must recognize the network without
+       explicit provisioning, and attempt to join
+
+       new nodes must become a part of the RPL DODAG, and make contact
+       with parent and child nodes
+
+       in networks with a PCE, new nodes must authorize the PCE to
+       update the nodes' schedule using 6top
+
+       in networks without a PCE, and some situations where a PCE
+       delegates details of a bundle to the nodes, the nodes must be
+       authorized to allocate time slots in their DODAG children
+
+   This document, presently a stand-alone document, but later to be a
+   section of [I-D.ietf-6tisch-architecture], explains the assumptions
+   of how the node is expected to be provisioned in the factory, and how
+   it will react to networks that it encounters.  As is explained in
+   every Internet of Things document, the nodes are constrainted, have
+   no end-user interfaces, and therefore it is desired that they
+   function in a "zero-touch" manner.
+   [I-D.irtf-nmrg-autonomic-network-definitions] introduces the term
+   "autonomic", and it is exactly the properties described there that
+   are desired for 6tisch networks.
+
+   A 802.1AR [IEEE.802.1AR] certificate provisioned in each node at the
+   factory, combined with a certificate chain provided to the network
+   service provider, permits the node to be recognized by the network,
+   and also for the network to assert it's authority to own and control
+   the node.  The authentication part of a security protocol (TLS, DTLS,
+   EAP-TLS, details TBD) will establish identities, and then, said
+   security protocol will be used to provide integrity protection for a
+   control protocol (YANG/6top, as discussed in
+   [I-D.wang-6tisch-6top-sublayer]) to configure the TSCH cells.
+
+1.1.  Requirements Language
 
    The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
    "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
    document are to be interpreted as described in RFC 2119 [RFC2119].
 
-3.  layer-2 security requirements
+1.2.  layer-2 join
 
    As outlined in [I-D.ietf-roll-security-threats] there are a number of
    threats in LLNs, and in RPL which are solved if there is layer-2
    security.  The requirement is therefore to provide keying for the
    layer-2 security features: encryption and integrity protection.
 
+
+
+
+
+Richardson              Expires October 03, 2013                [Page 3]
+
+Internet-Draft               6tisch-security                  April 2013
+
+
    In addition to serving to protect the routing traffic against
    attacks, use of the layer-2 access control serves as adminission
    control to the network.  It is therefore part of the layer-2 join
    process to authenticate the new node, as well as authorize it to join
    the network.  The admission control SHOULD be controlled by autonomic
-   certificates, see section X.
+   certificates, as described below.
 
-4.  6top/PCE security requirements
+1.3.  Terminology
+
+                   Plant Installation: the (6tisch) network installed
+                   for control purposes.
+
+                   Service Provider: the operator of the network.  The
+                   service provider may a department internal to the
+                   plant, or may be an external contractor.  It is a
+                   role.
+
+                   Authorization server: a centralized entity that makes
+                   both layer-2 admission control decisions, and acting
+                   as a super-user for all nodes, delegates 6top
+                   authorization to a PCE, or to parent nodes for PCE-
+                   less operation.
+
+   [I-D.pritikin-bootstrapping-keyinfrastructures] explains the
+   architecture for use of 802.1AR certificates in a bootstrap process.
+   In that document a number of terms of introduced, and in this section
+   those terms are mapped to 6tisch entities and processes.  Section 2
+   of [I-D.pritikin-bootstrapping-keyinfrastructures] defines:
+
+   Domain:         this refers to the entire 6tisch installation
+
+   Domain CA:      this is a CA operated by the service provider.  It is
+                   a role: physically, it may be co-located with an
+                   Authorization Server and/or with a PCE and have
+                   private interfaces with those entities, or may be
+                   elsewhere with interfaces to be determined, but out
+                   of scope for this document.
+
+   Orchestrator:   the role of the orchestrator is provided by
+                   Authorization Server (a term used by both ACE and
+                   PANA [RFC5191]), or the EAP Server (see [RFC5247]).
+
+   Factory:        this is the vendor of the mote.  It may consist of a
+                   supplier chain of value-added resellers.
+
+   Factory CA:     this is the root CA that is placed into the mote.
+                   Each device also has an 802.1AR identity issued from
+                   that CA.
 
 
 
-
-Richardson             Expires September 04, 2014               [Page 2]
+Richardson              Expires October 03, 2013                [Page 4]
 
-Internet-Draft               6tisch-security                  March 2014
+Internet-Draft               6tisch-security                  April 2013
 
+
+   Registrar:      the role of registrar is likely performed by the
+                   Authorization Server.  (TBD: it could be distributed
+                   throughout the network)
+
+   MASA Cloud Service:  A Manufacturer Authorized Signing Authority.
+                   These will typically be co-located in the
+                   Authorization Server.
+
+1.4.  Use of 802.1AR certificates
+
+   This section explains how the process detailed in
+   [I-D.pritikin-bootstrapping-keyinfrastructures] is to be implemented
+   in the 6tisch case.  To recap, the process looks like:
+
+   (1)   Proxy Discovery
+
+   (2)   Receiving and accepting the Domain Identity
+
+   (3)   Enrollment
+
+   (4)   After Enrollment
+
+   (5)   Behavior of a proxy
+
+   (6)   Behavior of the Registrar
+
+   (7)   Authenticating the Device
+
+   (8)   Accepting the Entity
+
+   (9)   Claiming the new entity
+
+   (10)  Behavior of the MASA Cloud Service
+
+   (11)  Issue Authorization Token and Log the event
+
+1.5.  6top/PCE security requirements
 
    In addition to authorization a node to join the network, the node
    agree to provide authorization to a PCE in order for the 6top
@@ -125,7 +275,16 @@ Internet-Draft               6tisch-security                  March 2014
    establish an authorization that permits the new node to be programmed
    by the PCE.
 
-5.  leveraging layer-2 identities for layer-4 security
+
+
+Richardson              Expires October 03, 2013                [Page 5]
+
+Internet-Draft               6tisch-security                  April 2013
+
+
+1.5.1.  no-PCE and 6LR to 6LR 6top authorization
+
+2.  leveraging layer-2 identities for layer-4 security
 
    As explained in [I-D.behringer-autonomic-network-framework] the
    layer-2 identity of the node will be given by a certificate signed by
@@ -147,13 +306,13 @@ Internet-Draft               6tisch-security                  March 2014
    a ticket to permit it to write the timeslot schedule.  In option 2,
    below, it also permits updates to the security parameters.
 
-6.  option 1: The ZigBeeIP/PANA way
+3.  option 1: The ZigBeeIP/PANA way
 
    This is an adaptation of the process described in [ZigBeeIP], section
    and expounded upon in section 6.3: "Network Discovery", 6.4: "Network
    Selection", and 6.5, "Node Joining".  The process is abridged below.
 
-6.1.  Network Discovery
+3.1.  Network Discovery
 
    The MAC beacon facility is used.  A critical difference in 6tisch
    from ZigBee IP is that because nodes transmit and receive according
@@ -163,17 +322,23 @@ Internet-Draft               6tisch-security                  March 2014
 
    Each response to the Beacon is a potential network-joining-parent.
 
-
-
-Richardson             Expires September 04, 2014               [Page 3]
-
-Internet-Draft               6tisch-security                  March 2014
-
-
    As an option, it may be desireable for this document to define a well
    known NetworkID.
 
-6.2.  PANA protocol
+
+
+
+
+
+
+
+
+Richardson              Expires October 03, 2013                [Page 6]
+
+Internet-Draft               6tisch-security                  April 2013
+
+
+3.2.  PANA protocol
 
    The PANA payloads MUST be relayed by the chosen network-joining-
    parent.  It is assumed that the PANA Authentication Agent is co-
@@ -191,7 +356,7 @@ Internet-Draft               6tisch-security                  March 2014
    and sends it encrypted using the Encr-Encap AVP described in
    [RFC6786].
 
-6.3.  Authorization
+3.3.  Authorization
 
    QUESTION: can we find a way for the authorization protocol, such as
    described in draft-gerdes-core-dcaf-authorize-01, to run
@@ -202,7 +367,352 @@ Internet-Draft               6tisch-security                  March 2014
    that is joining is the resource server, and the origin client is the
    PCE.
 
-7.  option 2: The WirelessHart/ISA100 way
+3.4.  Advantages of the EAP-TLS based methods
+
+
+
+   * JS: that;s what the base standard specifies. Contention-based medium, slotted Aloha style, you will only have 1-3 of the number of cells available to get usable bandwidth. This restrictyion only when multiple devices are joining.
+   * MR: just 1.5 slots per slotframe?
+   * JS: yes, about 36% of BW.
+   * MR: base on calculation, between 10-15s for each node to join?
+
+   * JS: calculation 30min for 10-hop 100-node network
+
+   * JS: dynamics will be slightly different
+   * MR: calculation assumes 300 bytes for certificate
+
+   * MR: if communication needed up the tree, you need to provision tha BW using 6TiSCH. We could reserve that BW, then remove it later on.
+   * JS: assume any reasonable system would do.
+   * MR: can we assume a large more BW in core? Is this reasonable
+   * JS: design trade-off between many elements. More like individual system design tradeoff
+   * MR: how much of the rest of the slots are available? ()%+?
+
+
+
+Richardson              Expires October 03, 2013                [Page 7]
+
+Internet-Draft               6tisch-security                  April 2013
+
+
+   * JS: yes?
+   * SD: clarifying, if only 1-hop peer, how running DTLS?
+   * JS: assumption is node gets authentication. One of the reasons TLS
+         mechanisms just to get on NW, because will need same mechanism to
+         send data
+   JS: assumption: server may be multiple hops away, separate the
+   * joining problem from steady state problems. What are we trying to
+   * solve to get device ontothe network. Siomply able to send data to
+   * PCE, or trying to get it to point where has DTLS session to data
+   * sink. We haven't defined what we mean by joining. What would it take
+   * a device to konw nothing about NW to send beacons on its own,
+   * independent from being able to send data.
+
+   SD: in that sense, should we think about, if a node can connectto a
+   * peer node which is already part othe network. If new node can
+   * authenticate with old node, could be partof it.
+
+   *JS: possibility,but not necessarily cut down on nmber of packets to
+   * be sent. If assume network has been provisioned probably, it's the
+   * number of frames that matter, more than whether has to go multiple
+   * hops.
+
+   *JS: in WHART, all frames sent to centralized manager to set up
+   * tyransport session. Primary different is tha the number fo frame is
+   * very small (1 frame up, 1 frame down) to get transport session
+   * started.
+
+   *RS: suppose we are able to bring down the size of join messages to 4,
+   * (2 up, 2 down), why would that problem be so different from
+   * operational use. Don't understand why security would be such a big
+   * factor. If we have problems at this level, maybe communication is
+   * the issue./
+
+   *JS: there was a discussion about segregating joining traffic from
+   * data traffic. You would prevent DoS by restricting those
+   * traffics. Agree that, if you're willing to mingle flow, joining BW
+   * is just another piece fo traffic, and set up the network
+   * accordingly.
+
+   *RS: talking about different joining NW?
+
+   *MR: if ou set up network to support 10 queries per s, security
+   * operation would be 11th query? WOuld be very nice, but because these
+   * nodes haven't been authenticated, we cannot open dedicated cell, we
+   * need to protect that BW very clearly. Because we have so little
+   * excess BW.
+
+   *HM: endpoints will not be powered up all the time.
+
+
+
+Richardson              Expires October 03, 2013                [Page 8]
+
+Internet-Draft               6tisch-security                  April 2013
+
+
+   *MR: assumption provisioning of L2 network key, we have been discussion on protocols to provision this key.
+
+   *HM: join is to help nodes get this key? Confused since assumes motes
+   *would know key. If they don't know universal key, any device would
+   *have to know list of device cert from that domain. Would need to be
+   *pre-configure, more complex?
+
+   *MR: we have made a large assumption: we believe we will use 1AR cert
+   * process. Device provisioned with cert+priv key. Chain of certs so
+   * network can authenticate itself to the device, and back.
+
+   *RS: maybe assumption of onlin cert verification protocol wrong in
+    these networks.
+
+   *MR: we are not talking specifically about specific online
+   * protocol. Donig 3-4 cert verification is not hard for IoT device.
+
+   *RS: main problem has to do with communication flows and how many time
+   * slots. No problem if unlimited BW. In WHART, one communicatino up,
+   * one down. We can do authentication step, authorization, then manage
+   * schedule. Possible to keep all flows local, and have proxy send data
+   * once. Would that solve JS problem?
+
+   *MR: process described is not dissimiamlto EAP-TLS. Question: in WHART
+   * messages, any assymetric operation where node validate, or based on
+   * pre-provisioning.
+
+   *JS: correct, WHART has pre-shared key, no validation based on certs.
+   *MR: symmetric encrypted iwth pre-shared keys.
+   *JS: yes
+   *MR: eliminated the problem of authenticating nodes. THis means that
+   *you order nodes from manufactured, someone has to pre-provision key.
+
+   *JS: can only speak to our product. Operator (not necessarily
+   * manufact.) sets security material through API. Something thta could
+   * be done at factory. HART provides commands to specify keying
+   * material at run-time.
+
+   *MR: key point is that device has pre-existing relationship with factiry.
+   *JR: yes, or configured on-site.
+   *MR: technician has equipment?
+   *JS: can be done in-band, or through configuration using hand-held
+   *device.
+
+   *_[07.50]_ MR: like to self-criticize this mechanism. What's wrong
+   *with WHART model?
+
+   *JS: limitation is that you cannot cleanly separate joining flows from
+
+
+
+Richardson              Expires October 03, 2013                [Page 9]
+
+Internet-Draft               6tisch-security                  April 2013
+
+
+   * steady-state flws in the netowkr. You can take device from box,
+   * which will disrupt data traffic. In a typical HART network, amount
+   * of BW for joining is really low. Limitation, no external validation
+   * of the manager's ID, other than it posesses the right key.
+
+   *MB: question on thread model. Are we worried about a device on
+   * factory floor which floods network and DoS? Specific to security?
+
+   *JS: it's one thread?
+   *TW: 6TiSCH van provide isolation
+   *RS:
+   *MR: controller can take over part of the network. We don't think tha
+   *the model od symmetric key provisioning is going to work in touchless
+   *networks.
+
+   * JS: agree
+   * TW: agree
+   * MR: different
+   * MR: useful, what's I'm trying to do is get on same page. We're working on getting to understand different assumption
+   > Action utem: MR to send out draft
+   * MR: next call is next Monday
+   * _[08.02]_ meeting ends
+
+   in this specification, we are going to say that joining messages will go over a different slot/colour, and therefore join messages can not overrun the network.
+
+
+   PREVIOUS MINUTES:
+
+   FOCUS ON CONs of Wireless Hart-inspired method
+
+   assumption:
+   mote runs CoAP and DTLS already for 6top, and also for actual sensors/actuators
+   802.1AR, "immuntable device identity" is origin of trust relationship (almost ubiquitous in AMI GRID)
+
+   WIRELESSHART/JOIN NETWORK METHOD (whether ND ARO or RPL DIO)
+
+   PRO:
+   reuses existing CoAP and DTLS code base.
+
+   CON:
+   requires layer-3/layer-4 to be operating.
+
+   1X/PANA METHOD.
+
+   PRO:
+   specified by Zigbee IP
+   common authorization infrastructure with Zigbee IP.
+   minimizes attack footprint
+
+
+
+Richardson              Expires October 03, 2013               [Page 10]
+
+Internet-Draft               6tisch-security                  April 2013
+
+
+   deals with DoS on network traffic much earlier
+
+   CON:
+   requires EAP, TLS
+   code is used only once to get on the network
+
+
+   * _[07.12]_ Michael introduces agenda. Makes sure all on Etherpad.
+   * Pros and cons of EAP-TLS method (whether over PANA or 1X), vs. "separate" join network with object model with 6top protocol and data collection/actuation
+   * Comments on 1X from Paul Duffy. IEEE802.15.9 group is chartered to design something similar to 1X in IEEE802.15.4 space.
+   * Rene comments about 15.9
+   * 15.9 securitry WG from IEEE.
+   * [RS] started several years ago. This KMP group codifies method to transfer key management messages.
+   * [MR] functionaly equivalent to PANA
+   * [RS] any technical work? Not equivalent to PANA.
+   * [??] PANA can carry 1X-type messages over L3
+   * [SD] understand is that 15.9 is not chartered to design mechanism similar to PANA. Not sure we should call is as chartered to design simething similat to PANA
+   * [MR] discussion with Bob indicating 15.9 will allow to transport PANA like messages
+   * [MR] does not matter, let's discuss at some other time. You have a client which wants to join; EAP-TLS, you get a network key through that process allowing the mote to join the network. ONly reason to talk about 15.9 because Paul Duffy indicated preferref 1X instead of PANA.
+   * **Michael** updates list of pro/con
+   * []
+   * []Conceivably TLS and DTLS can share a lot of code though they are different services
+   * [RS] Technical argument for preferring 1X?
+   * [MR] pre-existance of deployments/customers. Preference.
+   * [PT] we want to understand what properties we want to get and the cost for getting there, 1x vs. PANA is not the question for now
+   * [MR] you have to have EAP and TLS code in mote
+   * [SD] are we assumiong that mote will run CoAP interface?
+   * [MR] yes, at least because 6top interface on top of CoAP
+   motes and auth servers from different vendors. We don't expect people to handle mote to authenticate, needs to be much more automated. 1AR is routinely done by companies such as Verizon for VoIP phones; there are products which use that
+   * [SD] are we trying to lock down the device to a particular vendor?
+   * [MR] initial transfer between vendor and user. from APIs in 1AR, nce the initial owner takes ownership, possibility to change identity so doesn't need it to talk to vendor. Allows transfering ownership
+   * [SD] we could just think of it as a certificate. We should have different options
+   * [SD] different options
+   * [MR] other mechanisms like tranfering ownership can be added to talk. Crux is for mote to be able to validate certificate chain.
+   * [MR] the mote is able to validate a variaty of certificate statements.
+   * [PD] about 1AR, let's not assume that its perfect. May need to be modified, but string guidance to IoT space.
+   * [MR] moved on. we spent lot of time on PANA/1AR. round table.
+   * [YO] opinion is that don't disagree with supprting 1AR, would be good to support also pre-shared key for authentication. supporting EAP can fit
+   * [MR] can you write as e-mail?
+   * [Yoshi]: don't disagree supporting 1x but preshared key auth should be supported as well;
+   * [Tom] nothing to add. concenrned with scalability and replacement. But think those issues are being addressed eg by Ren?. Tend to agree wit the cisco concenrns about scalability.
+   * [MR] about scalability?
+   * [Tom] issues of scalability and deployment and replacement. Tends to agree with Cisco concerns about scalability.
+   * [Thomas] was taking notes. interesting discussion.... leaning towards side that all of our data is transported over CoAP.
+   * []data transported over coap. also coap to the PCE. CoAp os not optional, has to be there and secured.Reusing it for join reduces the footprint in the motes.
+   Good and provenb technology. Let's onctinue the discussion/
+   * [Subir] nothing to add
+   * [Ren?] look at flexible auth and device replacement
+
+
+
+Richardson              Expires October 03, 2013               [Page 11]
+
+Internet-Draft               6tisch-security                  April 2013
+
+
+   * [Jonathan] scalability and not having protocols that require 10 passes to just get ready to send data
+   * [Paul]
+   * [PT] concerned that we are looking are solution, but we haven't documented requirement space. not clear we cover all requirements. Happy to keep in mind Michael B. Anything else we are missing?
+   * [MR] we are having a call next week, then skipping a week. we resume on 4/2. please send summary to
+   please email to the 6TiSCH list and send a summary
+   6TISCH SECURITY ARCHITECTURE
+
+   assumption:
+   mote runs CoAP and DTLS already for 6top, and also for actual sensors/actuators
+   802.1AR, "immuntable device identity" is origin of trust relationship (almost ubiquitous in AMI GRID)
+
+
+   1X/PANA METHOD.
+
+   PRO:
+   specified by Zigbee IP
+   common authorization infrastructure with Zigbee IP.
+   minimizes attack footprint
+   deals with DoS on network traffic much earlier
+
+   CON:
+   requires EAP, TLS
+   code is used only once to get on the network
+
+   WIRELESSHART/JOIN NETWORK METHOD (whether ND ARO or RPL DIO)
+
+   PRO:
+   reuses existing CoAP and DTLS code base.
+
+   CON:
+   requires layer-3/layer-4 to be operating.
+
+   * [SD] if runs CoAP, will have DTLS by default?
+   * [MR] will assume runs CoAP for sensors/actuators.
+   * [JS] sounds reasonable. If CoAP is mechanisms that devices use for data and manavement, than joining model which stays close to that is a good idea. Simple solutions that don't have a lot of exatr layer or parallel technologies is better.
+   * [MR] have written down as PRO. Anybody has recommendation for 1X/PANA method?
+   > No answer.
+   * [MR] ZIP has been shipping devices with the PANA/1X approach
+   * [MR] once you get to authorization server, EAP-TLS is used, regardless of whether you come in through PANA or 1X. Same thing.
+   * [SD] this framework does allow for centralized/distributed case. ZIP has some relay functionality to reach auth server if not a single hop away
+   * [MR] provides by fast that use PANA of link-layer address. proxy uses PANA to contact authorization server. The ajacent node relay the information through the mesh to the auth server. At that point, it's PANA. With 1X, something else? Probably radius or something else.
+   * [SD] normally done by radius in WiFi case
+   * [MR] yes, but single hop and not thousands of authenticators talking to radius server.
+   * [PD] couple of points: PANA or 1X both needs to be relayed. PAAN relayes has been RFCed, not a problem. From a radius/relaying standpoint, PAdNA and 1X are very similar.
+   * Michael summarizes: discussion PANA/1X (EAP-TLS) solution vs. method with uses CoAP/DTLS and YANG model similar to WHART
+   * [MR] EAP-TLS over something. If someone has ZIP auth infra for lighting, they could use it for plant. Same technology. Agreed that having common infrastructure is a feature?
+   * [PD] not a lot of ZIP deployed. Cisco not a fan of PANA in ZIP, many devices that use 1X. Cisco tries to use things off the shelf. 1X is smaller footprint
+   * [PD] CoAP/DTLS brand new?
+
+
+
+Richardson              Expires October 03, 2013               [Page 12]
+
+Internet-Draft               6tisch-security                  April 2013
+
+
+   * [PD] no running code for IP but wireless HART does it that way just not over IP, just over layer 2.
+   * [PD] people inside Cisco might not like that at all because all the way up to L4. minimal amount of footprint is preference.
+   * [PD] minimize attack footprints by strictly L2 approach 1x.
+   * [JS] L2 from 15.4 perspective?
+   * [PD] yes
+   * [PD] if solution relies on L2, L3 and L4, than most of the stack needs to be functioning
+   * [MR] about footprint: robot requires CoAP/DTLS to run for application
+   * [PD] security compromise, cannot answer directly. you would be making compromise.
+   * [JS] if the machanism that all are happy with to send data is not the same one as the one used to join network then security concern for join is principally for blocking denial of service. you need to through those steps to send data. That looks like what we need to decide: DoS vs. simplifying
+   * [PD] utility answer: L2 access control is one the last thi. immutable device identify: related to IEEE802.15.1AR
+   * [MR] assumes 1AR can be used in all of solution. No other standard solution as mature as 1AR.
+   * [PD] think correct, ccould ask authors. involves with ZIP, 802.1AR, smart grid issues.
+   * [PD] has been implemented most in grid
+   * [RS] question 1AR: don't understand what is so special about it. Just certificate?
+   * [PD] set of guidelines for strong device identity
+   * [RS] uses SHA1, deprecated? AR provides mech to issue cert find which device belongs to which entity
+   * [MR]
+
+   * [MR] specifies RSA method and
+   * [PD] not just certificate method, random number
+   * [MR] also mechanism to update and replace certificate to create new device IDs. Seems that are all piece needed: acccept mote, replace, obsolete, change ownership, etc.
+   * [RS] we need more precision. Have no way what is being discussed aboiut whgat matters and what is missing.
+   * [PD] happy to read specification different from 1AR
+   * [MR] question is not whether 1AR is good/bad. It exists. Question is: given what 1AR gives us, how can be transport the network claim to the mote and the auth claim of the mote. One of standard protocolos is PANA or 1Z transport of EAP-TLS. Other mechanisms is to use the certificates 1AR gives us directly in DTLS. In 6TiSCH, if we have a PCE, the PCE needs to program schedule in motes. PCE need su access to motes, 1AR certificates provide that ownership statement. We need interoperability between ])]")])])')')')])
+
+
+                                  Minutes
+
+3.5.  Challenges with this method
+
+                             number of messages
+
+                             size of certificate exchanges
+
+                             EAP and TLS code not used for anything else
+
+                             ability to support non-PCE case
+
+4.  option 2: The WirelessHart/ISA100 way
 
    This is an adaptation of the process described in [HART], section
    6.6.3.
@@ -212,19 +722,20 @@ Internet-Draft               6tisch-security                  March 2014
    learn of the 6lowpan contexts, and then uses RPL to join a well-known
    DODAG as a leaf node.
 
+
+
+
+Richardson              Expires October 03, 2013               [Page 13]
+
+Internet-Draft               6tisch-security                  April 2013
+
+
    Nodes which have capacity for new joining nodes will respond to the
    RPL DIS messages.  Once connected, the new node uses regular
    unicasted IP datagrams to contact an Authorization Manager (in the
    context of [I-D.gerdes-core-dcaf-authorize]).  The negotiation with
    the Authorization Manager (AM) uses the autonomic certificates as
    described above to establish the trust relationship.
-
-
-
-Richardson             Expires September 04, 2014               [Page 4]
-
-Internet-Draft               6tisch-security                  March 2014
-
 
    Once the relationship is up, the AM needs to signal the PCE that it
    has a new authorized node, and the PCE can now (acting as a
@@ -237,15 +748,26 @@ Internet-Draft               6tisch-security                  March 2014
    layer-3 RPL credentials.  MLE may be used to establish pair-wise
    keying, as appropriate to the timeslot schedule.
 
-8.  Security Considerations
+4.1.  Advantages of this method
 
-9.  Other Related Protocols
+4.2.  Challenges with the CoAP method
 
-10.  IANA Considerations
+                             new protocol to initiate layer-2
 
-11.  Acknowledgements
+                             potentially weaker resistance to layer-2
+                             DoS
 
-12.  Normative references
+5.  Security Considerations
+
+6.  Other Related Protocols
+
+7.  IANA Considerations
+
+8.  Acknowledgements
+
+9.  References
+
+9.1.  Normative references
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119, March 1997.
@@ -254,9 +776,30 @@ Internet-Draft               6tisch-security                  March 2014
               ZigBee Public Document 15-002r00, "ZigBee IP
               Specification", 2013.
 
+
+
+
+
+
+Richardson              Expires October 03, 2013               [Page 14]
+
+Internet-Draft               6tisch-security                  April 2013
+
+
    [RFC6786]  Yegin, A. and R. Cragie, "Encrypting the Protocol for
               Carrying Authentication for Network Access (PANA)
               Attribute-Value Pairs", RFC 6786, November 2012.
+
+   [I-D.ietf-6tisch-architecture]
+              Thubert, P., Watteyne, T., and R. Assimiti, "An
+              Architecture for IPv6 over the TSCH mode of IEEE
+              802.15.4e", draft-ietf-6tisch-architecture-01 (work in
+              progress), February 2014.
+
+   [I-D.wang-6tisch-6top-sublayer]
+              Wang, Q., Vilajosana, X., and T. Watteyne, "6TiSCH
+              Operation Sublayer (6top)", draft-wang-6tisch-6top-
+              sublayer-00 (work in progress), February 2014.
 
    [I-D.ietf-roll-security-threats]
               Tsao, T., Alexander, R., Dohler, M., Daza, V., Lozano, A.,
@@ -265,34 +808,67 @@ Internet-Draft               6tisch-security                  March 2014
               ietf-roll-security-threats-06 (work in progress), December
               2013.
 
-   [I-D.behringer-autonomic-network-framework]
-              Behringer, M., Pritikin, M., Bjarnason, S., and A. Clemm,
-              "A Framework for Autonomic Networking", draft-behringer-
-              autonomic-network-framework-01 (work in progress), October
-              2013.
-
    [I-D.gerdes-core-dcaf-authorize]
               Gerdes, S., Bergmann, O., and C. Bormann, "Delegated CoAP
               Authentication and Authorization Framework (DCAF)", draft-
-
-
-
-Richardson             Expires September 04, 2014               [Page 5]
-
-Internet-Draft               6tisch-security                  March 2014
-
-
               gerdes-core-dcaf-authorize-02 (work in progress), February
               2014.
+
+   [I-D.pritikin-bootstrapping-keyinfrastructures]
+              Pritikin, M., Behringer, M., and S. Bjarnason,
+              "Bootstrapping Key Infrastructures", draft-pritikin-
+              bootstrapping-keyinfrastructures-00 (work in progress),
+              January 2014.
+
+   [I-D.irtf-nmrg-autonomic-network-definitions]
+              Behringer, M., Pritikin, M., Bjarnason, S., Clemm, A.,
+              Carpenter, B., Jiang, S., and L. Ciavaglia, "Autonomic
+              Networking - Definitions and Design Goals", draft-irtf-
+              nmrg-autonomic-network-definitions-00 (work in progress),
+              December 2013.
 
    [HART]     www.hartcomm.org, "Highway Addressable Remote Transducer,
               a group of specifications for industrial process and
               control devices administered by the HART Foundation", .
 
    [ISA100.11a]
+
+
+
+
+
+Richardson              Expires October 03, 2013               [Page 15]
+
+Internet-Draft               6tisch-security                  April 2013
+
+
               ISA, "ISA100, Wireless Systems for Automation", May 2008,
-              < http://www.isa.org/Community/
+              <http://www.isa.org/Community/
               SP100WirelessSystemsforAutomation>.
+
+   [IEEE.802.1AR]
+              Institute of Electrical and Electronics Engineers, "Secure
+              Device Identity", IEEE 802.1AR, 2009,
+              <http://www.ieee802.org/1/pages/802.1ar.html>.
+
+9.2.  Informative references
+
+   [I-D.behringer-autonomic-network-framework]
+              Behringer, M., Pritikin, M., Bjarnason, S., and A. Clemm,
+              "A Framework for Autonomic Networking", draft-behringer-
+              autonomic-network-framework-01 (work in progress), October
+              2013.
+
+   [RFC5191]  Forsberg, D., Ohba, Y., Patil, B., Tschofenig, H., and A.
+              Yegin, "Protocol for Carrying Authentication for Network
+              Access (PANA)", RFC 5191, May 2008.
+
+   [RFC5247]  Aboba, B., Simon, D., and P. Eronen, "Extensible
+              Authentication Protocol (EAP) Key Management Framework",
+              RFC 5247, August 2008.
+
+   [RFC6869]  Salgueiro, G., Clarke, J., and P. Saint-Andre, "vCard
+              KIND:device", RFC 6869, February 2013.
 
 Author's Address
 
@@ -317,20 +893,4 @@ Author's Address
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Richardson             Expires September 04, 2014               [Page 6]
+Richardson              Expires October 03, 2013               [Page 16]

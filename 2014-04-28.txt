@@ -1,0 +1,82 @@
+
+zerotouch:
+- requirement for no provisioning keys, at installation time.
+              - provisioning step?
+              - factory
+
+  - access control vs touchless mechanism for provisioning. NOT THE SAME THING.
+  - the network MUST be secure against introduction of not-yet authorized
+    devices, from not yet same manufacturer/VAR/
+
+Behringer flow... agreement between vendor and deployer.
+          vendor ships sensors... and some certificates... and may or may not
+          depend upon the deployment.
+
+  - when the device is deployed, it goes home to the vendor and goes back to
+    the vendor.
+
+- ZERO TOUCH refers to touching the SENSOR, not implying that the network
+  and infrastructure need not by updated.
+  - and also NEVER TOUCHED
+
+- GENUINE DEVICE vs RESILIENCE Against NORTEL EFFECT
+- the second hand market support.... replacing the vendor.
+
+
+- JS: for some devices without horsepower; adoption from existing efforts,
+      some advantages to support.
+      What was written before: not exclude protocols that can not do PSK, but
+      support it if we can.
+
+- JS: protocol must protect battery against asymmetric Denial of Service.
+- PT: suggests ignore small devices and small devices, we want large scale
+      and class 2 devices.
+
+- JS Zero Touch is important for scale.
+  if we can tolerate "if you want to use PSK, then you will give up ZT, here
+                       are the ways that you can do that, but ...!"
+
+- TP agrees.
+- RS agrees.
+- Maik Seeward.
+
+
+====
+SD: would like to fit in to existing AAA.
+    TLS vs DTLS?  maybe.
+
+TP: if we don't have asymmetric, then we need another proximity mechanism.
+    some kind of proximity system.
+    stronger concern about intrusion.
+
+ ... is WIFI / PEAP/etc. being used?
+ ... as long as provisioning process is viewed as disjoint....
+ - in large sites... acquisition stages... things that could be done at that
+ stage to authorize things.
+
+JS: anecdotal... wirelessHART community... the people who are operating the
+    networks do not want interaction with the IT department.
+TP: to go even further, the control room people are different then the people
+    who install... are even further from the IT people.
+    "Joe Screwdriver"... just install parts.  "Is it working"
+    Proximity devices are good for validation.
+
+    ISA100A -- every LED is a photodiode... for bidirectional... optical
+                output is a reversable channel....
+
+JS: voice of the developer... the only big concern about EAP/TLS vs DTLS, is
+    that it is two things to test.
+
+JS --- 3DES/SHA1 mandatory... crypto suite concerns.... do not want to
+   implement older crypto.
+
+
+
+
+
+
+
+
+
+
+
