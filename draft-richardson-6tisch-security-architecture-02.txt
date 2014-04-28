@@ -4,8 +4,8 @@
 
 Network Working Group                                      M. Richardson
 Internet-Draft                                                       SSW
-Intended status: Informational                                April 2013
-Expires: October 03, 2013
+Intended status: Informational                            April 28, 2014
+Expires: October 30, 2014
 
 
        security architecture for 6top: requirements and structure
@@ -35,11 +35,11 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on October 03, 2013.
+   This Internet-Draft will expire on October 30, 2014.
 
 Copyright Notice
 
-   Copyright (c) 2013 IETF Trust and the persons identified as the
+   Copyright (c) 2014 IETF Trust and the persons identified as the
    document authors.  All rights reserved.
 
 
@@ -53,9 +53,9 @@ Copyright Notice
 
 
 
-Richardson              Expires October 03, 2013                [Page 1]
+Richardson              Expires October 30, 2014                [Page 1]
 
-Internet-Draft               6tisch-security                  April 2013
+Internet-Draft               6tisch-security                  April 2014
 
 
    This document is subject to BCP 78 and the IETF Trust's Legal
@@ -109,9 +109,9 @@ Table of Contents
 
 
 
-Richardson              Expires October 03, 2013                [Page 2]
+Richardson              Expires October 30, 2014                [Page 2]
 
-Internet-Draft               6tisch-security                  April 2013
+Internet-Draft               6tisch-security                  April 2014
 
 
    There are five security problems that must be solved in the 6tisch
@@ -165,9 +165,9 @@ Internet-Draft               6tisch-security                  April 2013
 
 
 
-Richardson              Expires October 03, 2013                [Page 3]
+Richardson              Expires October 30, 2014                [Page 3]
 
-Internet-Draft               6tisch-security                  April 2013
+Internet-Draft               6tisch-security                  April 2014
 
 
 1.2.  layer-2 join
@@ -221,9 +221,9 @@ Internet-Draft               6tisch-security                  April 2013
 
 
 
-Richardson              Expires October 03, 2013                [Page 4]
+Richardson              Expires October 30, 2014                [Page 4]
 
-Internet-Draft               6tisch-security                  April 2013
+Internet-Draft               6tisch-security                  April 2014
 
 
    Factory:        this is the vendor of the mote.  It may consist of a
@@ -277,9 +277,9 @@ Internet-Draft               6tisch-security                  April 2013
 
 
 
-Richardson              Expires October 03, 2013                [Page 5]
+Richardson              Expires October 30, 2014                [Page 5]
 
-Internet-Draft               6tisch-security                  April 2013
+Internet-Draft               6tisch-security                  April 2014
 
 
    PANA.  A nearby node provides a PANA Authentication Agent (PAA)
@@ -333,9 +333,9 @@ Internet-Draft               6tisch-security                  April 2013
 
 
 
-Richardson              Expires October 03, 2013                [Page 6]
+Richardson              Expires October 30, 2014                [Page 6]
 
-Internet-Draft               6tisch-security                  April 2013
+Internet-Draft               6tisch-security                  April 2014
 
 
    An important aspect to note is that it may be some minutes to days
@@ -389,9 +389,9 @@ Internet-Draft               6tisch-security                  April 2013
 
 
 
-Richardson              Expires October 03, 2013                [Page 7]
+Richardson              Expires October 30, 2014                [Page 7]
 
-Internet-Draft               6tisch-security                  April 2013
+Internet-Draft               6tisch-security                  April 2014
 
 
 1.5.  6top/PCE security requirements
@@ -445,9 +445,9 @@ Internet-Draft               6tisch-security                  April 2013
 
 
 
-Richardson              Expires October 03, 2013                [Page 8]
+Richardson              Expires October 30, 2014                [Page 8]
 
-Internet-Draft               6tisch-security                  April 2013
+Internet-Draft               6tisch-security                  April 2014
 
 
    The MAC beacon facility is used.  A critical difference in 6tisch
@@ -501,9 +501,9 @@ Internet-Draft               6tisch-security                  April 2013
 
 
 
-Richardson              Expires October 03, 2013                [Page 9]
+Richardson              Expires October 30, 2014                [Page 9]
 
-Internet-Draft               6tisch-security                  April 2013
+Internet-Draft               6tisch-security                  April 2014
 
 
    about 30 minutes for 10-hop deep, 100-node network.  This assumes 300
@@ -557,9 +557,9 @@ Internet-Draft               6tisch-security                  April 2013
 
 
 
-Richardson              Expires October 03, 2013               [Page 10]
+Richardson              Expires October 30, 2014               [Page 10]
 
-Internet-Draft               6tisch-security                  April 2013
+Internet-Draft               6tisch-security                  April 2014
 
 
    Appropriate layer-2 keys are updated, as well as any appropriate
@@ -613,9 +613,9 @@ Internet-Draft               6tisch-security                  April 2013
 
 
 
-Richardson              Expires October 03, 2013               [Page 11]
+Richardson              Expires October 30, 2014               [Page 11]
 
-Internet-Draft               6tisch-security                  April 2013
+Internet-Draft               6tisch-security                  April 2014
 
 
               Tsao, T., Alexander, R., Dohler, M., Daza, V., Lozano, A.,
@@ -669,9 +669,9 @@ Internet-Draft               6tisch-security                  April 2013
 
 
 
-Richardson              Expires October 03, 2013               [Page 12]
+Richardson              Expires October 30, 2014               [Page 12]
 
-Internet-Draft               6tisch-security                  April 2013
+Internet-Draft               6tisch-security                  April 2014
 
 
    [RFC5191]  Forsberg, D., Ohba, Y., Patil, B., Tschofenig, H., and A.
@@ -725,4 +725,4 @@ Author's Address
 
 
 
-Richardson              Expires October 03, 2013               [Page 13]
+Richardson              Expires October 30, 2014               [Page 13]
