@@ -18,7 +18,7 @@
 <?rfc toc="yes"?>
 <?rfc symrefs="yes"?>
 
-<rfc category="info" ipr="trust200902" docName="draft-richardson-6tisch-security-architecture-03">
+<rfc category="info" ipr="trust200902" docName="draft-richardson-6tisch-security-architecture-02">
 
 
 
@@ -113,11 +113,11 @@ SHOULD be controlled by autonomic certificates, as described below.
 <section title="Terminology">
 <t>
 <list hangIndent="16" style="hanging">
-<t>Plant Installation: the (6tisch) network installed for control purposes.</t>
-<t>Service Provider: the operator of the network.  The service provider may a department internal to the plant, or may be
+<t hangText="Plant Installation:"> the (6tisch) network installed for control purposes.</t>
+<t hangText=">Service Provider:"> the operator of the network.  The service provider may a department internal to the plant, or may be
 an external contractor.  It is a role.</t>
-<t>Authorization server: a centralized entity that makes both layer-2 admission control decisions, and acting as a super-user
-   for all nodes, delegates 6top authorization to a PCE, or to parent nodes for PCE-less operation.</t>
+<t hangText="Authorization server:"> a centralized entity that makes both layer-2 admission control decisions, and acting as a super-user for all nodes, delegates 6top authorization to a PCE, or to parent nodes for PCE-less operation.</t>
+<t hangText="New Entity:"> a new 6LN that wishes to join the network.</t>
 </list>
 </t>
 
@@ -136,8 +136,7 @@ Section 2 of <xref target="I-D.pritikin-bootstrapping-keyinfrastructures"/> defi
 <t hangText="Factory:"> this is the vendor of the mote.  It may consist of a supplier chain of value-added resellers.</t>
 <t hangText="Factory CA:"> this is the root CA that is placed into the mote.  Each device also has an 802.1AR identity
 issued from that CA.</t>
-<t hangText="Registrar:"> the role of registrar is likely performed by the Authorization Server.  (TBD: it could be distributed
-throughout the network)</t>
+<t hangText="Registrar:"> the role of registrar is performed by the Authorization Server. </t>
 <t hangText="MASA Cloud Service:"> A Manufacturer Authorized Signing Authority.  These will typically be co-located in the
 Authorization Server.</t>
 </list>
@@ -162,6 +161,77 @@ implemented in the 6tisch case.  To recap, the process looks like:
 <t>Issue Authorization Token and Log the event</t>
 </list>
 </t>
+<section title="Proxy Discovery">
+<t>
+The Proxy Discovery step may occur via one of two mechanisms, which are further described in section <xref target="l2join"/>.
+One method involves using an EAP-TLS (or rather, EAP-EST, as imagined by
+<xref target="I-D.pritikin-bootstrapping-keyinfrastructures"/>), over either 1X or PANA.  A nearby node provides a 
+PANA Authentication Agent (PAA) (<xref target="RFC5191"/>), or 802.1X Authenticator.  A well-known L2-JOIN key is used during
+bootstrap.   A second method involves using leveraging the ARO ND messages that 6LOWPAN mandates be exchanged.
+</t>
+<t>In either case, a (D)TLS channel is created from the New Entity/6LN to the Registrar/Authorization Server</t>
+<section title="Certificate Chains">
+<t>In forming the TLS channel, two certificate chains are validated.  The Registrar validates a certificate (possibly chain) 
+presented by the New Entity. This certificate chain would be communicated using the TLS Client Certificate message.
+The Registrar sends a certificate chain in the TLS Server Certificate message which the New Entity must be able to validate.
+</t>
+<t>As the Registar will in general perform enrollment for all 6LN on a network, it will have multiple identities, and should
+send only the certificate chain relevant to each New Entity.  </t>
+<t>The New Entity must also send some TBD extension to the server to indicate who it is.   This has to be done 
+before the server sends it's Server Certificate message.  This is a variation of the problem the TLS 1.2 SNI extension 
+was designed to solve.
+</t>
+</section>
+</section>
+<section title="Registrar/Authorization server access to certificate chain">
+<t>
+The certificate chain that the Registrar returns may not exist until the New Entity attempts to join.
+It may be retrieved/created through a number of different mechanisms which are out of scope of this document, but may include:
+<list style="format (%d)">
+<t>loaded from a diskette/USB/QR code that was included in the packaging</t>
+<t>downloaded via some interactive web interface provided by the manufacturer and/or logistics company</t>
+<t>acquired via an online enrollment protocol, such as EST protocol.  This could be secured using a one-time password provided
+in the packaging.</t>
+<t>out of band, by having a human talk to another human.</t>
+</list>
+An important aspect to note is that it may be some minutes to days between the time the New Entity initiates the join
+ operation, and when the Registrar is able to respond properly: some kind of error code and back-off process may be appropriate.
+</t>
+</section>
+<section title="Receiving and accepting the Domain Identity">
+<t>
+The two certificate chains described in the previous section are critical for permitting the zero-touch operation
+of the 6LN New Entity.   This section describes the contents of the Server Certificate that the 6LN expects to verify.
+For the purposes of this explanation, assume the 6LN has a deviceID of 3145191, and is manufactured by Example Corp, that it was
+distributed by Example Logistics, and it is being installed at ACME Widgets.
+</t>
+<t>
+The certificate chain will be rooted with the 6LN's manufacturer certificate: Example Corp.  
+<list style="format (%c)">
+<t>An 802.1AR certificate signed by Example Corp. delegates deviceID 3145191 to Example Logistics.</t>
+<t>An 802.1AR certificate signed by Example Logistics delegates deviceID 3145191 to ACME Widgets</t>
+</list>
+This chain permits the 6LN to verify that ACME Widgets is in fact it's rightful owner.  
+The certificate chain MAY have a validity permit, or MAY be valid indefinitely.  Given that it is unlikely that the 6LN 
+will have a reliable real-time clock, or access to a secure network time source, validation of validity permits may
+be useless.
+</t>
+<t>
+The certificate chain that the New Entity presents to the Registrar would look like:
+<list style="format (%c)">
+<t>An 802.1AR certificate signed by Example Corp. binds deviceID 3145191 to the public key of the New Entity.</t>
+</list>
+1While a longer certificate chain could be embedded in the device, it is not advised.  Any part of
+the manufacturing chain that can do such a thing should simply put it's own identity there, and provide a new
+certificate chain path to the Registrar. 
+</t>
+</section>
+<section title="Enrollment">
+<t>
+  
+</t>
+</section>
+
 </section>
 
 <section title="6top/PCE security requirements">
@@ -201,6 +271,7 @@ write the timeslot schedule.  In option 2, below, it also permits updates to the
 
 </section>
 
+<section title="Layer-2 Join" anchor="l2join">
 <section title="option 1: The ZigBeeIP/PANA way">
 <t>
 This is an adaptation of the process described in <xref target="ZigBeeIP"/>, section
@@ -325,6 +396,7 @@ MLE may be used to establish pair-wise keying, as appropriate to the timeslot sc
 <t>potentially weaker resistance to layer-2 DoS</t>
 </list>
 </t>
+</section>
 </section>
 </section>
 
