@@ -1,0 +1,163 @@
+<?xml version="1.0"?>
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
+]>
+
+<?rfc toc="yes"?>
+<?rfc symrefs="yes"?>
+
+<rfc category="info" ipr="trust200902" docName="draft-richardson-6tisch-table-of-contents-00">
+
+
+
+<front>
+  <title abbrev="6tisch-table-of-contents">
+      table of contents for security architecture
+  </title>
+
+  <author initials="M." surname="Richardson" fullname="Michael C. Richardson">
+    <organization abbrev="SSW">Sandelman Software Works</organization>
+    <address>
+      <postal>
+        <street>470 Dawson Avenue</street>
+        <city>Ottawa</city>
+        <region>ON</region>
+        <code>K1Z 5V7</code>
+        <country>CA</country>
+      </postal>
+      <email>mcr+ietf@sandelman.ca</email>
+      <uri>http://www.sandelman.ca/</uri>
+    </address>
+  </author>
+
+  <date month="June" year="2014" />
+
+<abstract>
+  <t>
+    This is a template for a security architecture.
+  </t>
+</abstract>
+
+</front>
+
+<middle>
+<section title="security requirements">
+  <t>
+  </t>
+  <section title="thread model">
+    <t>
+    </t>
+  </section>
+  <section title="implementation cost">
+    <t>
+      (storage of security material, computational cost)
+    </t>
+  </section>
+  <section title="denial of service">
+    <t>
+      other communication impacts of security protocol mechanics
+    </t>
+  </section>
+</section>
+<section title="protocol requirements/constraints/assumptions">
+  <t>
+  </t>
+  <section title="inline/offline">
+    <t>
+      dependencies on centralized or external functionality, inline and offline
+    </t>
+  </section>
+</section>
+<section title="time sequence diagram">
+  <t>
+  </t>
+  <section title="explanation of each step">
+  <t>
+  </t>
+  </section>
+  <section title="size of each packet">
+  <t>
+    and number of frames needed to contain it.
+  </t>
+  </section>
+</section>
+<section title="resulting security properties obtained from this process">
+  <t>
+  </t>
+</section>
+<section title="deployment scenarios underlying protocol requirements">
+  <t>
+  </t>
+</section>
+<section title="device identification">
+  <t>
+  </t>
+  <section title="PCE/Proxy vs Node identification">
+  <t>
+  </t>
+  </section>
+  <section title="Time source authentication / time validation">
+    <t>
+      Note: RPL Root authentication is a chartered item
+    </t>
+  </section>
+  <section title="description of certificate contents">
+    <t>
+    </t>
+  </section>
+  <section title="privacy aspects">
+    <t>
+    </t>
+  </section>
+</section>
+<section title="slotframes to be used during join">
+  <t>
+    how is this communicated in the (extended) beacon.
+  </t>
+</section>
+<section title="configuration aspects">
+  <t>(allocation of slotframes after join, network statistics, neighboetc.)
+  </t>
+</section>
+<section title="authorization aspects">
+  <t>
+  lifecycle (key management, trust management)</t>
+  <section title="how to determine a proxy/PCE from a end node">
+    <t>
+    </t>
+  </section>
+  <section title="security considerations">
+    <t>what prevents a node from transmitting when it is not their turn (part one: jamming)
+    </t>
+    <t>can a node successfully communicate with a peer at a time when not supposed to, may be tied to link layer security, or will it be policed by receiver? </t>
+  </section>
+</section>
+<section title="security architecture">
+  <t>
+    security architecture and fit of e.g. join protocol and provisioning into this
+  </t>
+</section>
+<section title="Posture Maintenance">
+  <t>(SACM related work)</t>
+</section>
+
+<section title="Security Considerations">
+  <t>
+  </t>
+</section>
+
+<section title="Other Related Protocols"></section>
+<section title="IANA Considerations">
+<t>
+</t>
+</section>
+<section title="Acknowledgements"></section>
+
+</middle>
+
+<back>
+<references title="Normative references">
+<?rfc include="reference.RFC.2119" ?>
+</references>
+
+</back>
+</rfc>
