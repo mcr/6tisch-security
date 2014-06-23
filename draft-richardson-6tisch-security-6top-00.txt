@@ -1,0 +1,336 @@
+
+
+
+
+Network Working Group                                      M. Richardson
+Internet-Draft                                                       SSW
+Intended status: Informational                                 June 2014
+Expires: December 3, 2014
+
+
+                     6tisch secure join using 6top
+              draft-richardson-6tisch-table-of-contents-00
+
+Abstract
+
+   This document details a security architecture that permits a new
+   6tisch compliant node to join a 802.15.4e/6tisch network.  The
+   process provides just enough end to end connectivity to permit a
+   network management process to reach out to the new node and provision
+   it using 6top over CoAP/DTLS.  The process is zero-touch using
+   autonomic mechanisms, requiring no direct provisioning step.  Any
+   resemblance to WirelessHART/IEC62591 is entirely intentional.
+
+Status of This Memo
+
+   This Internet-Draft is submitted in full conformance with the
+   provisions of BCP 78 and BCP 79.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at http://datatracker.ietf.org/drafts/current/.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   This Internet-Draft will expire on December 3, 2014.
+
+Copyright Notice
+
+   Copyright (c) 2014 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents
+   (http://trustee.ietf.org/license-info) in effect on the date of
+   publication of this document.  Please review these documents
+   carefully, as they describe your rights and restrictions with respect
+   to this document.  Code Components extracted from this document must
+   include Simplified BSD License text as described in Section 4.e of
+
+
+
+Richardson              Expires December 3, 2014                [Page 1]
+
+Internet-Draft                 6tisch-6top                     June 2014
+
+
+   the Trust Legal Provisions and are provided without warranty as
+   described in the Simplified BSD License.
+
+Table of Contents
+
+   1.  security requirements . . . . . . . . . . . . . . . . . . . .   2
+     1.1.  thread model  . . . . . . . . . . . . . . . . . . . . . .   3
+     1.2.  implementation cost . . . . . . . . . . . . . . . . . . .   3
+     1.3.  denial of service . . . . . . . . . . . . . . . . . . . .   3
+   2.  protocol requirements/constraints/assumptions . . . . . . . .   3
+     2.1.  inline/offline  . . . . . . . . . . . . . . . . . . . . .   3
+   3.  time sequence diagram . . . . . . . . . . . . . . . . . . . .   3
+     3.1.  explanation of each step  . . . . . . . . . . . . . . . .   3
+       3.1.1.  step (1): beacon  . . . . . . . . . . . . . . . . . .   3
+       3.1.2.  step (2): acquire authorizer key  . . . . . . . . . .   4
+       3.1.3.  step (3): receive authorizer key  . . . . . . . . . .   4
+       3.1.4.  step (4): join request  . . . . . . . . . . . . . . .   4
+     3.2.  size of each packet . . . . . . . . . . . . . . . . . . .   4
+   4.  resulting security properties obtained from this process  . .   4
+   5.  deployment scenarios underlying protocol requirements . . . .   4
+   6.  device identification . . . . . . . . . . . . . . . . . . . .   4
+     6.1.  PCE/Proxy vs Node identification  . . . . . . . . . . . .   4
+     6.2.  Time source authentication / time validation  . . . . . .   4
+     6.3.  description of certificate contents . . . . . . . . . . .   4
+     6.4.  privacy aspects . . . . . . . . . . . . . . . . . . . . .   4
+   7.  slotframes to be used during join . . . . . . . . . . . . . .   4
+   8.  configuration aspects . . . . . . . . . . . . . . . . . . . .   5
+   9.  authorization aspects . . . . . . . . . . . . . . . . . . . .   5
+     9.1.  how to determine a proxy/PCE from a end node  . . . . . .   5
+     9.2.  security considerations . . . . . . . . . . . . . . . . .   5
+   10. security architecture . . . . . . . . . . . . . . . . . . . .   5
+   11. Posture Maintenance . . . . . . . . . . . . . . . . . . . . .   5
+   12. Security Considerations . . . . . . . . . . . . . . . . . . .   5
+   13. Other Related Protocols . . . . . . . . . . . . . . . . . . .   5
+   14. IANA Considerations . . . . . . . . . . . . . . . . . . . . .   5
+   15. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .   5
+   16. References  . . . . . . . . . . . . . . . . . . . . . . . . .   5
+     16.1.  Normative references . . . . . . . . . . . . . . . . . .   5
+     16.2.  Informative references . . . . . . . . . . . . . . . . .   6
+   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .   6
+
+1.  security requirements
+
+   The ultimate goal of the join protocol is to provide a new node with
+   enough locally significant security credentials that it is able to
+   take part in the network directly.  The credentials may vary by
+   deployment.  They can be:
+
+
+
+
+Richardson              Expires December 3, 2014                [Page 2]
+
+Internet-Draft                 6tisch-6top                     June 2014
+
+
+       a network-wide shared symmetric key
+
+       a locally significant (one-level only) certificate
+
+   Given one of the the above, there are a number of possible protocols
+   that can be used to generate layer-2 sessions keys for the node,
+   including:
+
+       Mesh Link Exchange [I-D.kelsey-intarea-mesh-link-establishment]
+
+1.1.  thread model
+
+1.2.  implementation cost
+
+   (storage of security material, computational cost)
+
+1.3.  denial of service
+
+   other communication impacts of security protocol mechanics
+
+2.  protocol requirements/constraints/assumptions
+
+2.1.  inline/offline
+
+   dependencies on centralized or external functionality, inline and
+   offline
+
+3.  time sequence diagram
+
+3.1.  explanation of each step
+
+3.1.1.  step (1): beacon
+
+   A 6tisch join/synchronization beacon is broadcast periodically, and
+   is authenticated with a symmetric "beacon key":
+
+      well known JOIN key, such "JOIN6TISCH"
+
+      another key, provisioned in advance (OOB)
+
+      a shared symmetric key derived from public part of top level
+      certificate (a closely held "secret")
+
+   The purpose of this key is not to provide a high level of assurance,
+   but rather to filter out 6tisch traffic from another random traffic
+   that may be sharing the same radio frequencies.
+
+
+
+
+
+Richardson              Expires December 3, 2014                [Page 3]
+
+Internet-Draft                 6tisch-6top                     June 2014
+
+
+   These beacons are used for JOIN purpose only, and are not related to
+   the Enhanced Beacons used in the rest of 6tisch.
+
+3.1.2.  step (2): acquire authorizer key
+
+   Step (4) will involve doing a public key encryption to node
+   performing the authorization management role.  In order to do this,
+   the new node needs to know the public key of the manager, and so in
+   this step it requests that certificate from the neighbour that that
+   it received the beacon from.
+
+3.1.3.  step (3): receive authorizer key
+
+   the proxy neighbour sends the key in one or more messages, along with
+   the address of the authorizing server.  The address of the
+   authorization server could be an attribute of the certificate that is
+   received.
+
+3.1.4.  step (4): join request
+
+   This message is addressed to the authorizing node at layer 3, and the
+   proxy simply forwards the message.
+
+3.2.  size of each packet
+
+   and number of frames needed to contain it.
+
+4.  resulting security properties obtained from this process
+
+5.  deployment scenarios underlying protocol requirements
+
+6.  device identification
+
+6.1.  PCE/Proxy vs Node identification
+
+6.2.  Time source authentication / time validation
+
+   Note: RPL Root authentication is a chartered item
+
+6.3.  description of certificate contents
+
+6.4.  privacy aspects
+
+7.  slotframes to be used during join
+
+   how is this communicated in the (extended) beacon.
+
+
+
+
+
+Richardson              Expires December 3, 2014                [Page 4]
+
+Internet-Draft                 6tisch-6top                     June 2014
+
+
+8.  configuration aspects
+
+   (allocation of slotframes after join, network statistics,
+   neighboetc.)
+
+9.  authorization aspects
+
+   lifecycle (key management, trust management)
+
+9.1.  how to determine a proxy/PCE from a end node
+
+9.2.  security considerations
+
+   what prevents a node from transmitting when it is not their turn
+   (part one: jamming)
+
+   can a node successfully communicate with a peer at a time when not
+   supposed to, may be tied to link layer security, or will it be
+   policed by receiver?
+
+10.  security architecture
+
+   security architecture and fit of e.g. join protocol and provisioning
+   into this
+
+11.  Posture Maintenance
+
+   (SACM related work)
+
+12.  Security Considerations
+
+13.  Other Related Protocols
+
+14.  IANA Considerations
+
+15.  Acknowledgements
+
+16.  References
+
+16.1.  Normative references
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119, March 1997.
+
+
+
+
+
+
+
+
+Richardson              Expires December 3, 2014                [Page 5]
+
+Internet-Draft                 6tisch-6top                     June 2014
+
+
+16.2.  Informative references
+
+   [I-D.kelsey-intarea-mesh-link-establishment]
+              Kelsey, R., "Mesh Link Establishment", draft-kelsey-
+              intarea-mesh-link-establishment-05 (work in progress),
+              February 2013.
+
+Author's Address
+
+   Michael C. Richardson
+   Sandelman Software Works
+   470 Dawson Avenue
+   Ottawa, ON  K1Z 5V7
+   CA
+
+   Email: mcr+ietf@sandelman.ca
+   URI:   http://www.sandelman.ca/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Richardson              Expires December 3, 2014                [Page 6]

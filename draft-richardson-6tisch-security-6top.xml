@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd">
+<?rfc toc="yes"?>
+<?rfc symrefs="yes"?>
+<rfc category="info" docName="draft-richardson-6tisch-table-of-contents-00"
+     ipr="trust200902">
+  <front>
+    <title abbrev="6tisch-6top">6tisch secure join using 6top</title>
+
+    <author fullname="Michael C. Richardson" initials="M."
+            surname="Richardson">
+      <organization abbrev="SSW">Sandelman Software Works</organization>
+
+      <address>
+        <postal>
+          <street>470 Dawson Avenue</street>
+
+          <city>Ottawa</city>
+
+          <region>ON</region>
+
+          <code>K1Z 5V7</code>
+
+          <country>CA</country>
+        </postal>
+
+        <email>mcr+ietf@sandelman.ca</email>
+
+        <uri>http://www.sandelman.ca/</uri>
+      </address>
+    </author>
+
+    <date month="June" year="2014"/>
+
+    <abstract>
+      <t>This document details a security architecture that permits a new
+      6tisch compliant node to join a 802.15.4e/6tisch network.
+      The process provides just enough end to end connectivity to permit a
+      network management process to reach out to the new node and provision it using
+      6top over CoAP/DTLS.  The process is zero-touch using autonomic mechanisms,
+      requiring no direct provisioning step.  Any resemblance to WirelessHART/IEC62591 is entirely
+      intentional.</t>
+    </abstract>
+  </front>
+
+  <middle>
+    <section title="security requirements">
+      <t>
+        The ultimate goal of the join protocol is to provide a new node with enough locally
+        significant security credentials that it is able to take part in the network directly.
+        The credentials may vary by deployment. They can be:
+        <list hangIndent="4" style="hanging">
+        <t>a network-wide shared symmetric key</t>
+        <t>a locally significant (one-level only) certificate</t>
+        </list>
+      </t>
+      <t>Given one of the the above, there are a number of possible protocols that can be used
+      to generate layer-2 sessions keys for the node, including:
+        <list hangIndent="4" style="hanging">
+          <t>Mesh Link Exchange <xref target="I-D.kelsey-intarea-mesh-link-establishment"/></t>
+        </list>
+      </t>
+
+      <section title="thread model">
+        <t>
+        
+        </t>
+      </section>
+
+      <section title="implementation cost">
+        <t>(storage of security material, computational cost)</t>
+      </section>
+
+      <section title="denial of service">
+        <t>other communication impacts of security protocol mechanics</t>
+      </section>
+    </section>
+
+    <section title="protocol requirements/constraints/assumptions">
+      <t/>
+
+      <section title="inline/offline">
+        <t>dependencies on centralized or external functionality, inline and
+        offline</t>
+      </section>
+    </section>
+
+    <section title="time sequence diagram">
+      <t/>
+
+      <section title="explanation of each step">
+        <t/>
+
+        <section title="step (1): beacon">
+          <t>A 6tisch join/synchronization beacon is broadcast periodically,
+          and is authenticated with a symmetric “beacon key”:<list>
+              <t>well known JOIN key, such "JOIN6TISCH"</t>
+
+              <t>another key, provisioned in advance (OOB)</t>
+
+              <t>a shared symmetric key derived from public part of top level
+              certificate (a closely held "secret")</t>
+            </list>The purpose of this key is not to provide a high level of
+          assurance, but rather to filter out 6tisch traffic from another
+          random traffic that may be sharing the same radio frequencies.</t>
+
+          <t>These beacons are used for JOIN purpose only, and are not related
+          to the Enhanced Beacons used in the rest of 6tisch.</t>
+        </section>
+
+        <section title="step (2): acquire authorizer key">
+          <t>Step (4) will involve doing a public key encryption to node
+          performing the authorization management role. In order to do this,
+          the new node needs to know the public key of the manager, and so in
+          this step it requests that certificate from the neighbour that that
+          it received the beacon from.</t>
+        </section>
+
+        <section title="step (3): receive authorizer key">
+          <t>the proxy neighbour sends the key in one or more messages, along
+          with the address of the authorizing server. The address of the
+          authorization server could be an attribute of the certificate that
+          is received.</t>
+        </section>
+
+        <section title="step (4): join request">
+          <t>This message is addressed to the authorizing node at layer 3, and
+          the proxy simply forwards the message.</t>
+        </section>
+      </section>
+
+      <section title="size of each packet">
+        <t>and number of frames needed to contain it.</t>
+      </section>
+    </section>
+
+    <section title="resulting security properties obtained from this process">
+      <t/>
+    </section>
+
+    <section title="deployment scenarios underlying protocol requirements">
+      <t/>
+    </section>
+
+    <section title="device identification">
+      <t/>
+
+      <section title="PCE/Proxy vs Node identification">
+        <t/>
+      </section>
+
+      <section title="Time source authentication / time validation">
+        <t>Note: RPL Root authentication is a chartered item</t>
+      </section>
+
+      <section title="description of certificate contents">
+        <t/>
+      </section>
+
+      <section title="privacy aspects">
+        <t/>
+      </section>
+    </section>
+
+    <section title="slotframes to be used during join">
+      <t>how is this communicated in the (extended) beacon.</t>
+    </section>
+
+    <section title="configuration aspects">
+      <t>(allocation of slotframes after join, network statistics,
+      neighboetc.)</t>
+    </section>
+
+    <section title="authorization aspects">
+      <t>lifecycle (key management, trust management)</t>
+
+      <section title="how to determine a proxy/PCE from a end node">
+        <t/>
+      </section>
+
+      <section title="security considerations">
+        <t>what prevents a node from transmitting when it is not their turn
+        (part one: jamming)</t>
+
+        <t>can a node successfully communicate with a peer at a time when not
+        supposed to, may be tied to link layer security, or will it be policed
+        by receiver?</t>
+      </section>
+    </section>
+
+    <section title="security architecture">
+      <t>security architecture and fit of e.g. join protocol and provisioning
+      into this</t>
+    </section>
+
+    <section title="Posture Maintenance">
+      <t>(SACM related work)</t>
+    </section>
+
+    <section title="Security Considerations">
+      <t/>
+    </section>
+
+    <section title="Other Related Protocols"/>
+
+    <section title="IANA Considerations">
+      <t/>
+    </section>
+
+    <section title="Acknowledgements"/>
+  </middle>
+
+  <back>
+    <references title="Normative references">
+      <?rfc include="reference.RFC.2119" ?>
+    </references>
+
+    <references title="Informative references">
+      <?rfc include="reference.I-D.kelsey-intarea-mesh-link-establishment" ?>
+    </references>
+  </back>
+</rfc>
