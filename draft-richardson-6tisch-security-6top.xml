@@ -34,11 +34,10 @@
 
     <abstract>
       <t>This document details a security architecture that permits a new
-      6tisch compliant node to join a 802.15.4e/6tisch network.
-      The process provides just enough end to end connectivity to permit a
-      network management process to reach out to the new node and provision it using
-      6top over CoAP/DTLS.  The process is zero-touch using autonomic mechanisms,
-      requiring no direct provisioning step.  Any resemblance to WirelessHART/IEC62591 is entirely
+      6tisch compliant node to join an 802.15.4e network. The process
+      bootstraps the new node authenticating the node to the network, and the
+      network to the node, and configuring the new node with the required
+      6tisch schedule. Any resemblance to WirelessHART/IEC62591 is entirely
       intentional.</t>
     </abstract>
   </front>
@@ -61,10 +60,10 @@
         </list>
       </t>
 
+      <t/>
+
       <section title="thread model">
-        <t>
-        
-        </t>
+        <t/>
       </section>
 
       <section title="implementation cost">
@@ -86,7 +85,55 @@
     </section>
 
     <section title="time sequence diagram">
-      <t/>
+
+        <figure align="center" anchor="TimeSequenceJoin"
+                title="Message sequence for JOIN message">
+          <preamble/>
+
+          <artwork align="left">
+            <![CDATA[
+   +---------+                +----------+                +-----------+
+   |         |                |  JOIN    |                |  Joining  |
+   |  P C E  |                | Assistant|                |   Node    |
+   |         |                |  (proxy) |                |           |
+   +---------+                +----------+                +-----------+
+       |                           |                            |
+       |                           |-------BEACON (1)---------->|
+       |                           |                            |
+       |                           |                            |
+       |                           |<------CERTIFICATE----------|
+       |                           |         REQUEST (2)        |
+       |                           |                            |
+       |                           |                            |
+       |                           |-------CERTIFICATE--------->|
+       |                           |        RESPONSE (multiple) |
+       |                           |                 (packets)  |
+       |                           |                            |
+       |<--------------------------|<-----JOIN REQUEST (4) -----|
+       |                           |                            |
+       |<------ServerHello-(E)-----|                            |
+       |                           |------- claim device -(F)-->|
+       |                           |                  [update audit log]
+       |                           |<----- authz token --(G)----|
+       |                           |      (802.1AR cert)        |
+       |                           |                            |
+       |                  [ still accept device?]               |
+       |<----ServerCertificate-(H)-|                            |
+       |                           |                            |
+  [validate cert chain? (I)]       |                            |
+       |                           |                            |
+       |---ClientCertificate-(J)-->|                            |
+       |                           |                            |
+       |                           |                            |
+       |----domain enrolment------>|                            |
+       |<----domain certificate----|                            |
+            ]]>
+          </artwork>
+
+          <postamble/>
+        </figure>
+
+      </t>
 
       <section title="explanation of each step">
         <t/>

@@ -113,8 +113,8 @@ SHOULD be controlled by autonomic certificates, as described below.
 <section title="Terminology">
 <t>
 <list hangIndent="16" style="hanging">
-<t hangText="Plant Installation:"> the (6tisch) network installed for control purposes.</t>
-<t hangText=">Service Provider:"> the operator of the network.  The service provider may a department internal to the plant, or may be
+<t hangText="Plant Installation:"> the (6tisch) network installed.  The term "Plant" may also be used as a short-hand.  While the plant may be a factory of some kind, the term Factory has a different meaning, detailed in the next section</t>  
+<t hangText="Service Provider:"> the operator of the network.  The service provider may a department internal to the plant, or may be
 an external contractor.  It is a role.</t>
 <t hangText="Authorization server:"> a centralized entity that makes both layer-2 admission control decisions, and acting as a super-user for all nodes, delegates 6top authorization to a PCE, or to parent nodes for PCE-less operation.</t>
 <t hangText="New Entity:"> a new 6LN that wishes to join the network.</t>
@@ -146,7 +146,7 @@ Authorization Server.</t>
 <section title="Use of 802.1AR certificates">
 <t>
 This section explains how the process detailed in <xref target="I-D.pritikin-bootstrapping-keyinfrastructures"/> is to be
-implemented in the 6tisch case.  To recap, the process looks like:
+implemented in the 6tisch case.  To recap, the process documented looks like:
 <list style="format (%d)">
 <t>Proxy Discovery</t>
 <t>Receiving and accepting the Domain Identity</t>
@@ -160,8 +160,52 @@ implemented in the 6tisch case.  To recap, the process looks like:
 <t>Behavior of the MASA Cloud Service</t>
 <t>Issue Authorization Token and Log the event</t>
 </list>
+The diagram below has been modified to take into account when (EAP-)TLS sends messages.
+<figure align="center" anchor="AutonomicMessageFlowEAPTLS"
+        title="Autonominic Certificate Flow: EAP-TLS">
+  <preamble/>
+
+  <artwork align="left">
+    <![CDATA[
+   +---------+                +----------+                +-----------+
+   |  New    |                |          |                |  Factory  |
+   | Entity  |                |  Domain  |                |   Cloud   |
+   |         |                |          |                |  Service  |
+   +---------+                +----------+                +-----------+
+       |                           |                            |
+       |<-------discovery-(A)----->|                            |
+       |-----TLS ClientHello (B)-->|                            |
+       |     (802.1AR cred**)      |                            |
+       |                           |---802.1AR identity(C)----->|
+       |                           |---Domain ID--------------->|
+       |                           |                    [device belongs]
+       |                           |                    [to domain?    ]
+       |                           |                            |
+       |                           |<---device history log(D)---|
+       |                    [ accept device? ]                  |
+       |<------ServerHello-(E)-----|                            |
+       |                           |------- claim device -(F)-->|
+       |                           |                  [update audit log]
+       |                           |<----- authz token --(G)----|
+       |                           |      (802.1AR cert)        |
+       |                           |                            |
+       |                  [ still accept device?]               |
+       |<----ServerCertificate-(H)-|                            |
+       |                           |                            |
+  [validate cert chain? (I)]       |                            |
+       |                           |                            |
+       |---ClientCertificate-(J)-->|                            |
+       |                           |                            |
+       |                           |                            |
+       |----domain enrolment------>|                            |
+       |<----domain certificate----|                            |
+            ]]>
+  </artwork>
+
+  <postamble/>
+</figure>
 </t>
-<section title="Proxy Discovery">
+<section title="Proxy Discovery (A)">
 <t>
 The Proxy Discovery step may occur via one of two mechanisms, which are further described in section <xref target="l2join"/>.
 One method involves using an EAP-TLS (or rather, EAP-EST, as imagined by
@@ -170,6 +214,86 @@ PANA Authentication Agent (PAA) (<xref target="RFC5191"/>), or 802.1X Authentica
 bootstrap.   A second method involves using leveraging the ARO ND messages that 6LOWPAN mandates be exchanged.
 </t>
 <t>In either case, a (D)TLS channel is created from the New Entity/6LN to the Registrar/Authorization Server</t>
+<section title="TLS ClientHello (B)">
+<t>This part has to include two things which are not common in TLS:
+<list style="format (%d)">
+<t>it must have a TrustedAuthorities (rfc6066) indicating what Factor CA it is attached to.  This would be obvious from
+the ClientCertificate, but the Domain Authorization server has to pick the correct certificate chain with which to
+respond.</t>
+<t>it must include its IDevID somewhere.  This may fit into an extension of the SNI (also RFC6066), or it could be that
+an entirely new extension is necessary.  It could be that this information could be included in the Distinguished Name 
+of the CA in part one.  
+</list>
+</section>
+<section title="Query to Factory Cloud Service/MANA (C)">
+<t>
+</t>
+</section>
+<section title="reply with device history (D)">
+<t>
+</t>
+</section>
+<section title="Domain Auth* server sends ServerHello (E)">
+<t>
+   (otherwise, if one does not accept the device, then one sends back
+   an error message, which naturally could be forged, so the device
+   really takes this a clue to back off a bit, listen some more,
+   and try again later)
+</t>
+</section>
+<section title="claim device (F)">
+<t>
+The Domain Auth* may need to talk to a cloud service in order to get an appropriate certificate issued
+to it.  That also would update the audit log.
+</t>
+</section>
+<section title="certificate issued to Domain Auth* (G)">
+<t>
+An appropriate certificate is issues to the Domain Auth*, that
+both identifies the domain owner, and binds the device to that
+domain owner.   This certificate could also be delivered by
+USB key, QR code, etc.
+</t>
+</section>
+<section title="send the certificate ServerCertificate (H)">
+<t>
+the certificate (chain) is sent as the ServerCertificate
+to the device.
+</t>
+</section>
+<section title="validate the certificate chain (I)">
+<t>
+The device validates the certificate chain.  The device
+has a trusted certificate store which contains the Factory
+A certificate.  In addition, it has its per-device IDevID
+certificate signed by said Factory CA.
+</t>
+<t>
+   The device can therefore validate a chain of certificates
+   that start at the Vendor Factor CA, and may chain through
+   multiple resellers, and finally end with a certificate
+   permitting the Domain Owner to claim the device.  It is
+   unclear what the subject of each of the certificates in
+   the chain is, as each part must in fact list the IDevID
+   being claimed.
+</t>
+</t>
+</section>
+<section title="send ClientCertificate (J)">
+<t>
+The device, accepting the claim would respond with the
+next step in the TLS protocol, the ClientCertificate
+message, proving the device is in fact the IDevID it claimed
+to be.
+</t>
+</section>
+<section title="send ClientCertificate (J)">
+<t>
+Now, the bootstrap process then suggests that using the resulting
+secure channel, that a certificate enrollment process (CET) be done.
+</t>
+</section>
+
 <section title="Certificate Chains">
 <t>In forming the TLS channel, two certificate chains are validated.  The Registrar validates a certificate (possibly chain) 
 presented by the New Entity. This certificate chain would be communicated using the TLS Client Certificate message.
@@ -183,6 +307,7 @@ was designed to solve.
 </t>
 </section>
 </section>
+
 <section title="Registrar/Authorization server access to certificate chain">
 <t>
 The certificate chain that the Registrar returns may not exist until the New Entity attempts to join.
