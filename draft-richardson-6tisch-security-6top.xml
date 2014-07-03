@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE rfc SYSTEM "rfc2629.dtd">
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
+<!ENTITY IEEE8021AR SYSTEM "http://www.sandelman.ca/rfc/xml/reference.802.1AR.xml">
+]>
 <?rfc toc="yes"?>
 <?rfc symrefs="yes"?>
 <rfc category="info" docName="draft-richardson-6tisch-table-of-contents-00"
@@ -40,30 +42,214 @@
       6tisch schedule. Any resemblance to WirelessHART/IEC62591 is entirely
       intentional.</t>
     </abstract>
+
+    <note title="Requirements Language">
+      <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+      "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+      "OPTIONAL" in this document are to be interpreted as described in <xref
+      target="RFC2119">RFC 2119</xref>.</t>
+    </note>
   </front>
 
   <middle>
-    <section title="security requirements">
+    <section title="Introduction">
+      <t>
+        A challenging part with constructing an LLN with nodes from multiple vendors is
+        providing enough security context to each node such that the network communication can
+        form and remain secure.   Most LLNs are small and have no operator interfaces at all,
+        and even if they have debug interfaces (such as JTAG) with personnel trained to use that,
+        doing any kind of interaction involving electrical connections in a dirty environment such
+        as a factory or refinery is hopeless.
+      </t>
+      <t>
+        It is necessary to have a way to introduce new nodes into a 6tisch network that does not
+        involve any direct manipulation of the nodes themselves.  This act has been called "zero-touch"
+        provisioning, and it does not occur by chance, but requires coordination between the manufacturer
+        of the node, the service operator running the LLN, and the installers actually taking the devices
+        out of the shipping boxes.
+      </t>
+      <section title="Assumptions">
+        <t>
+          For the process described in this document to work, some assumptions about available
+          infrastructure are made.  These are perhaps more than assumptions, but rather architectural
+          requirements; the exact operation of said infrastructure to be defined in a subsequent document.
+        </t>
+        <t>
+          In the diagrams and text that follows entities are named (and defined in the terminology
+          section).  Unless otherwise stated these are roles, not actual machines/systems.  The roles
+          are seperated by network protocols in order that they roles can be performed by different
+          systems, not because they have to be.  Different deployments will have different scaling
+          requirements for those entities.  Smaller deployments might co-located many roles together
+          into a single ruggedized platform, while other deployments might operate all of the roles
+          on distinct, multiply-redundant server classes located in a fully equipped datacentre.
+        </t>
+      </section>
+    </section>
+
+    <section title="Terminology and Roles">
+      <t>
+        Most terminology should be taken from <xref target="I-D.ietf-6tisch-architecture"/>
+        and from <xref target="I-D.ietf-6tisch-6top-interface"/>  and
+        <xref target="I-D.wang-6tisch-6top-sublayer" />. As well, many terms are taken from
+        <xref target="RFC6775" />.
+      </t>
+      <t>The following roles/things are defined:
+        <list hangIndent="20" style="hanging">
+          <t hangText="PCE">the Path Computation Engine. This entity reaches out to each of the nodes in the LLN, and configures an appropriate schedule using 6top.</t>
+          <t hangText="Authz Server/ACE">the Authorization Server. This offloads calculation of access control lists and other access control decisions for constrainted nodes. See <xref target="I-D.seitz-ace-problem-description"/></t>
+          <t hangText="JCE">the Join Coordination Entity. This acronym is chosen to parallel the PCE.</t>
+          <t hangText="802.1AR">a certificate created according the specification in <xref target="IEEE.802.1AR" /></t>
+          <t hangText="joining node"> The newly unboxed constrained node that needs to join a network.</t>
+          <t hangText="join assistant"> A constrained node near the joining node that will act as it's first
+          6LR, and will relay traffic to/from the joining node.</t>
+          <t hangText="join network"> A 802.15.4e network whose encryption and authentication key is "JOIN6TISCH".</t>
+          <t hangText="production network"> A 802.15.4e network whose encryption/authentication keys are
+          determined by some algorithm.  There may have network-wide group keys, or per-link keys.</t>
+        </list>
+      </t>
+    </section>
+    <section title="Architectural requirements of join protocol">
+      <t>This section works from the ultimate goal, and goes backwards to prerequisit actions.
+      <xref target="tsd" /> presents the protocol from beginning to end order.</t>
       <t>
         The ultimate goal of the join protocol is to provide a new node with enough locally
         significant security credentials that it is able to take part in the network directly.
         The credentials may vary by deployment. They can be:
         <list hangIndent="4" style="hanging">
         <t>a network-wide shared symmetric key</t>
-        <t>a locally significant (one-level only) certificate</t>
+        <t>a locally significant (one-level only) 802.11AR type DevID certificate</t>
         </list>
       </t>
       <t>Given one of the the above, there are a number of possible protocols that can be used
       to generate layer-2 sessions keys for the node, including:
         <list hangIndent="4" style="hanging">
           <t>Mesh Link Exchange <xref target="I-D.kelsey-intarea-mesh-link-establishment"/></t>
+          <t>work in 802.15.9</t>
+          <t>Security Framework and Key Management Protocol Requirements for 6TiSCH <xref target="I-D.ohba-6tisch-security"/> (this document provides the phase 0 required)</t>
+          <t>Layer-2 security aspects for the IEEE 802.15.4e MAC <xref target="I-D.piro-6tisch-security-issues"/></t>
         </list>
       </t>
 
-      <t/>
-
-      <section title="thread model">
-        <t/>
+      <t>
+        The intermediate goal of the join protocol is to enable a Join Coordination Entity (JCE) to
+        reach out to the new node, and install the credentials detailed above.  The JCE must authenticate
+        itself to the joining node so that the joining node will know that it has joined the correct network,
+        and the joining node must authenticate itself to the JCE so that the JCE will know that this
+        node belongs in the network.  This two way authentication occurs in the 6top/CoAP/DTLS session that is
+        established between the JCE and the joining node.
+      </t>
+      <t>
+        <xref target="I-D.ietf-6tisch-6top-interface"/> presents a way to interface to a 6top MIB.
+        <xref target="I-D.ietf-6tisch-coap" /> explains how to access that MIB using CoAP.
+        That model is to be extended to include security attributes for the network.   The JCE would
+        therefore reach out to the joining node and simply provision appropriate security properties
+        into the joining node, much like the PCE will provision schedules. 
+      </t>
+      <t>
+        This 6top-based secure join protocol has defined a push model for security provisioning by
+        the JCE.  This has been done for three reasons:
+        <list hangIndent="4" style="hanging">
+          <t>6tisch nodes already have to have a 6top CoAP server for schedule provising</t>
+          <t>this permits the JCE to manage how many nodes are trying to join at the same time,
+          and limit how much bandwidth/energy is used for the join operation, and also for the
+          JCE to prioritize the join order for nodes.</t>
+          <t>making the JCE initiate the DTLS connection significantly simplies the certificate
+          chains that must be exchanged as the most constrained side (the joining node) provides
+          it's credentials first, and lets the much richer JCE figure out what kind of certificate
+          chain will be required to authenticate the JCE.  In EAP-TLS/802.1x situations, the TLS
+          channel is created in the opposite direction, and it would have to complete in a tentative
+          way, and then further authorization occur in-band.
+          </t>
+        </list>
+      </t>
+      <t>
+        In order for a 6top/DTLS/CoAP connection to occur between the JCE and the joining node,
+        there needs to be end-to-end IPv6 connectivity between those two entities.   The joining
+        node will not participate in the route-over RPL mesh, but rather will be seen by the
+        network as being a 6lowpan only leaf-node.
+      </t>
+      <t>
+        There are some alternatives to having full end to end connectivity which are discussed in the security
+        considerations section.  
+      </t>
+      <t>
+        The specific mechanism to enable end to end connectivity with
+        the JCE are still open but will consist of one of: 
+        <list style="format (%d)">
+          <t> IPIP tunnel between Join Assistant and JCE</t>
+          <t> using straight RPL routing: the Join Assistant sends a DAO</t>
+          <t> using a separate RPL DODAG for join traffic</t>
+          <t> establishing a specific multi-hop 6tisch track for join traffic for each Join Assistant</t>
+        </list>
+        Of these mechanisms, the only one which does not require additional state on the Join Assistant
+        (which is also a constrained device) is (1) and (2).  Mechanism (2) additionally requires no
+        specific state on the Join Assistant.  Mechanism (2), in a non-storing DODAG requires additional
+        state on the DODAG root (6LBR) only; while mechanism (1) requires a similar amount of state
+        on the JCE.  For deployments where the JCE is part of the 6LBR, the amount of state is similar,
+        but in any case, the 6LBR is assumed to be a non-constrained node.  
+      </t>
+      <t>
+        As long as the Join Assistant does not do any kind of stateful firewalling, the IPIP tunnel and 
+        the DAO (2) method can be done by the Join Assistant statelessly.  Upward traffic from the
+        Join Network must be restricted to a 6tisch slotframe(s) to which join traffic is welcome,
+        no tunnelling is necessary as the upwards routes are all in place.  A destination address
+        ACL on traffic from the Join Network restricts the Joining Nodes to sending traffic only to
+        the address of the JCE. (If JCE and 6LBR are colocated, then this is the address in the ABRO,
+        if they are not colocated, then this address needs to have been provisioning in the Join Assistant
+        when it joined, or could be carried in a new RA option)
+      </t>
+      <t>
+        When using option (2), networks that have storing mode DODAGs will consume routing
+        resources on all intermediate nodes between the Join Assistant and the DODAG root. This resource
+        will be depleted without any authentication, and this threat is detailed below.  
+      </t>
+      <t>
+        Continuing to work backwards, in order the JCE reach out to provision the Joining Node, it needs
+        to know that the new node is present.  This is done by taking advantage of the 6lowPAN
+        Address Resolution Option (ARO) (<xref target="RFC6775">section 4.1</xref>).  The ARO causes
+        the new address to also be sent up to the 6LBR for duplicate detection using the DAR/DAC mechanism.
+        The 6LBR simply needs to tell the JCE about this using a protocol that needs to be defined, but 
+        could be either DAR or NS.
+      </t>
+      <t>
+        In addition to needing to know the joining devices address from the DAR/NS, the JCE also needs to
+        know the joining node' IDevID.   If the IDevID is less than 64 bits, then it is possible that it
+        could be placed into the EUI-64 option of the ARO, or the OUI of the
+        <xref target="I-D.thubert-6lowpan-backbone-router"/> EARO.  The JCE needs to know the joining
+        node's IDevID to know if this is device that it should even attempt to provision; and if so,
+        it may need to retrieve an appropriate certificate chain
+        (see <xref target="I-D.richardson-6tisch-idevid-cert" />) from the Factory in order for the JCE
+        to prove it is the legitimate owner of the joining node.
+      </t>
+      <t>
+        Prior to being able to announce itself in a NS, the joining node needs to find the Join Network.
+        This is done by listening to an extended beacon which are broadcast in designated slotframes
+        by Join Assistants.  The Extended Beacon provides a way for the Joining Node to synchronize 
+        itself to the overall timeslot schedule and provides an Aloha period in which the Joining Node
+        can send a Router Soliticiation, and receive an appropriate Router Advertisement giving the
+        Joining Node a prefix and default route to which to send join traffic.
+      </t>
+      <t>
+        It may be possible to eliminate a message exchange if space for a Router Advertisement can be 
+        found as part of the Join Network Extended Beacon.  This Enhanced Beacon would be distinct to
+        the Join Network, and would be encrypted with the well-known Join Network key.
+      </t>
+      <section title="prefixes to use for join traffic">
+        <t>
+          What prefix would the joining node for communication? There are three options:
+          <list style="format (%d)">
+            <t> just use link-local addresses (requires all traffic be tunneled)</t>
+            <t> use a prefix specifically for join traffic (may be easier with a join-only DODAG)</t>
+            <t> use the same prefix as the rest of the traffic (may require more complex ACLs, and leaks
+            information to attackers)</t>
+          </list>
+        </t>
+      </section>
+    </section>
+    <section title="security requirements">
+      <section title="threat model">
+        <t>There are three kinds of threats that a join process must deal with: a joining
+        </t>
       </section>
 
       <section title="implementation cost">
@@ -84,49 +270,53 @@
       </section>
     </section>
 
-    <section title="time sequence diagram">
-
+    <section title="time sequence diagram" anchor="tsd">
+      <t>
         <figure align="center" anchor="TimeSequenceJoin"
                 title="Message sequence for JOIN message">
           <preamble/>
 
           <artwork align="left">
             <![CDATA[
-   +---------+                +----------+                +-----------+
-   |         |                |  JOIN    |                |  Joining  |
-   |  P C E  |                | Assistant|                |   Node    |
-   |         |                |  (proxy) |                |           |
-   +---------+                +----------+                +-----------+
-       |                           |                            |
-       |                           |-------BEACON (1)---------->|
-       |                           |                            |
-       |                           |                            |
-       |                           |<------CERTIFICATE----------|
-       |                           |         REQUEST (2)        |
-       |                           |                            |
-       |                           |                            |
-       |                           |-------CERTIFICATE--------->|
-       |                           |        RESPONSE (multiple) |
-       |                           |                 (packets)  |
-       |                           |                            |
-       |<--------------------------|<-----JOIN REQUEST (4) -----|
-       |                           |                            |
-       |<------ServerHello-(E)-----|                            |
-       |                           |------- claim device -(F)-->|
-       |                           |                  [update audit log]
-       |                           |<----- authz token --(G)----|
-       |                           |      (802.1AR cert)        |
-       |                           |                            |
-       |                  [ still accept device?]               |
-       |<----ServerCertificate-(H)-|                            |
-       |                           |                            |
-  [validate cert chain? (I)]       |                            |
-       |                           |                            |
-       |---ClientCertificate-(J)-->|                            |
-       |                           |                            |
-       |                           |                            |
-       |----domain enrolment------>|                            |
-       |<----domain certificate----|                            |
++-----+   +------+            +----------+                +-----------+
+|     |   |      |            |  JOIN    |                |  Joining  |
+| JCE |   | 6LBR |            | Assistant|                |   Node    |
++-----+   +------+            |  (proxy) |                |           |
+   |         |                +----------+                +-----------+
+   |         |                     |                            |
+   |         |                     |-------BEACON (1)---------->|
+   |         |                     |                            |
+   |         |                     |<----Router Solicitation----|
+   |         |                     |---Router Advertisement---->|
+   |         |                     |                            |
+   |         |                     |<------CERTIFICATE----------|
+   |         |                     |         REQUEST (2)        |
+   |         |                     |                            |
+   |         |                     |                            |
+   |         |                     |-------CERTIFICATE--------->|
+   |         |                     |        RESPONSE (multiple) |
+   |         |                     |                 (packets)  |
+   |         |                     |                            |
+   |         |                     |<-----JOIN REQUEST (4) -----|
+   |         |                     |      (NS w/ARO )           |
+   |         |                     |                            |
+   |         |<---NS (DAR) (5)-----|                            |
+   |<--??(6)-|                     |                            |
+   |         |                     |                            |
+   |--??(7)->|                     |                            |
+   |         |                     |                            |
+   |         |----NS (DAC)-(8)---->|                            |
+   |         |     +------+        |                            |
+   |         |<DAO-| mesh |<--DAO--|                            |
+   |         |-DAO-| node |--DACK->|                            |
+   |         | ACK +------+        |                            |
+   |         |                     |-------JOIN ACK (9)-------->|
+   |         |                     |                            |
+   |         |                     |                            |
+   |================(10)==========>|----------6top----(11)----->|
+   |         |                     |          DTLS              |
+   |<===============(13)===========|<---------CoAP----(12)------|
+   |         |                     |        (many packets)      |
             ]]>
           </artwork>
 
@@ -138,7 +328,7 @@
       <section title="explanation of each step">
         <t/>
 
-        <section title="step (1): beacon">
+        <section title="step (1): enhanced beacon">
           <t>A 6tisch join/synchronization beacon is broadcast periodically,
           and is authenticated with a symmetric “beacon key”:<list>
               <t>well known JOIN key, such "JOIN6TISCH"</t>
@@ -155,12 +345,27 @@
           to the Enhanced Beacons used in the rest of 6tisch.</t>
         </section>
 
+        <section title="step (1B): send router solicitation">
+          <t>
+            The joining node sends a router solicitation during the Aloha 
+            period of the beacon.
+          </t>
+        </section>
+        <section title="step (1C): receive router advertisement">
+          <t>
+            The joining node receives a router advertisement from the 
+            Join Assistant. It could include 6CO options to help compress
+            packets, and should contain a prefix appropriate for join traffic.
+          </t>
+        </section>
         <section title="step (2): acquire authorizer key">
           <t>Step (4) will involve doing a public key encryption to node
           performing the authorization management role. In order to do this,
           the new node needs to know the public key of the manager, and so in
           this step it requests that certificate from the neighbour that that
           it received the beacon from.</t>
+          <t>This step is optional, and it's benefit has not been demonstrated by
+          a real world use case, but has been retained for now</t>
         </section>
 
         <section title="step (3): receive authorizer key">
@@ -171,8 +376,52 @@
         </section>
 
         <section title="step (4): join request">
-          <t>This message is addressed to the authorizing node at layer 3, and
-          the proxy simply forwards the message.</t>
+          <t>A regular Neighbour Solicitation is sent.  This should contain an ARO
+          (or EARO) option containing the Joining Nodes' IDevID.  The ARO/EARO will be
+          proxied by the Join Assistant as part of normal 6LowPAN processing for leaf
+          nodes (non-RPL nodes) upwards to the 6LBR</t>
+        </section>
+        <section title="step (5): NS duplicate address request (DAR)">
+          <t></t>
+        </section>
+        <section title="step (7): 6LBR informs JCE of new node">
+          <t></t>
+        </section>
+        <section title="step (8): JCE informs/acks to 6LBR of new node">
+          <t>The JCE could reply in the negative, and this would cause a DAC failure, TBD</t>
+        </section>
+        <section title="step (9): NS duplicate address confirmation (DAC)">
+          <t></t>
+        </section>
+        <section title="step (10): JCE initiates connection to joining node">
+          <t>The double lines indicate that an IPIP tunnel operation may be required.
+          If a straight DAO or seperate Join DODAG is used, then this is just a straight
+          forwarding root to leaf node forwarding operation, and involves either
+          using source routes (non-storing), or just forwarding for storing DODAGs.
+          </t>
+          <t>A specific bandwidth allocation would be used for this join traffic</t>
+          <t>The production network encryption keys would be used for the join traffic</t>
+        </section>
+        <section title="step (11): Join Assistant forwards packet to joining node">
+          <t>The JOIN Assistant would forward traffic to the Joining Node. Recognizing
+          that this traffic the JOIN Network, the JOIN Assistant would use the JOIN
+          Network key.</t>
+        </section>
+        <section title="step (12): Joining node replies">
+          <t>The joining node replies, using JOIN Network key.
+          </t>
+        </section>
+        <section title="step (13): Join Assistant forwards reply to JCE">
+          <t>
+            The JOIN Assistant, recognizing that the traffic came from the JOIN
+            Network, restricts the destination that can be reached to the 
+            the JCE only. It can do this in a stateless way, and it does NOT
+            need to track the traffic at (10) to open pinhole, etc.
+          </t>
+          <t>Recognizing that the traffic came from the JOIN Network, the
+          traffic would be placed into a bandwidth allocation (track?) that
+          allows such traffic.
+          </t>
         </section>
       </section>
 
@@ -190,7 +439,12 @@
     </section>
 
     <section title="device identification">
-      <t/>
+      <t>
+        The JCE authenticates the joining node using a certificate chain provided inline during the
+        DTLS negotiation.  The certificate chain is rooted in a vendor certificate that the JCE
+        must have preloaded, and is a statement as to the node's 802.1AR IDevID. 
+        The joining node authenticates the 
+      </t>
 
       <section title="PCE/Proxy vs Node identification">
         <t/>
@@ -260,10 +514,22 @@
   <back>
     <references title="Normative references">
       <?rfc include="reference.RFC.2119" ?>
+      <?rfc include="reference.RFC.6550" ?>
+      <?rfc include="reference.RFC.6775" ?>
+      &IEEE8021AR;
+      <?rfc include="reference.I-D.ietf-6tisch-coap" ?>
+      <?rfc include="reference.I-D.ietf-6tisch-6top-interface" ?>
+      <?rfc include="reference.I-D.ietf-6tisch-architecture" ?>
+      <?rfc include="reference.I-D.seitz-ace-problem-description" ?>
+      <?rfc include="reference.I-D.richardson-6tisch-idevid-cert" ?>
+      <?rfc include="reference.I-D.wang-6tisch-6top-sublayer" ?>
     </references>
 
     <references title="Informative references">
+      <?rfc include="reference.I-D.thubert-6lowpan-backbone-router" ?>
       <?rfc include="reference.I-D.kelsey-intarea-mesh-link-establishment" ?>
+      <?rfc include="reference.I-D.ohba-6tisch-security" ?>
+      <?rfc include="reference.I-D.piro-6tisch-security-issues" ?>
     </references>
   </back>
 </rfc>
