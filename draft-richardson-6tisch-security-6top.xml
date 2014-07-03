@@ -4,7 +4,7 @@
 ]>
 <?rfc toc="yes"?>
 <?rfc symrefs="yes"?>
-<rfc category="info" docName="draft-richardson-6tisch-table-of-contents-00"
+<rfc category="info" docName="draft-richardson-6tisch-table-of-contents-01"
      ipr="trust200902">
   <front>
     <title abbrev="6tisch-6top">6tisch secure join using 6top</title>
@@ -32,7 +32,7 @@
       </address>
     </author>
 
-    <date month="June" year="2014"/>
+    <date year="2014"/>
 
     <abstract>
       <t>This document details a security architecture that permits a new
@@ -115,14 +115,14 @@
         The ultimate goal of the join protocol is to provide a new node with enough locally
         significant security credentials that it is able to take part in the network directly.
         The credentials may vary by deployment. They can be:
-        <list hangIndent="4" style="hanging">
+        <list hangIndent="4" style="format %d)">
         <t>a network-wide shared symmetric key</t>
         <t>a locally significant (one-level only) 802.11AR type DevID certificate</t>
         </list>
       </t>
       <t>Given one of the the above, there are a number of possible protocols that can be used
       to generate layer-2 sessions keys for the node, including:
-        <list hangIndent="4" style="hanging">
+        <list hangIndent="4" style="format %d)">
           <t>Mesh Link Exchange <xref target="I-D.kelsey-intarea-mesh-link-establishment"/></t>
           <t>work in 802.15.9</t>
           <t>Security Framework and Key Management Protocol Requirements for 6TiSCH <xref target="I-D.ohba-6tisch-security"/> (this document provides the phase 0 required)</t>
@@ -148,7 +148,7 @@
       <t>
         This 6top-based secure join protocol has defined a push model for security provisioning by
         the JCE.  This has been done for three reasons:
-        <list hangIndent="4" style="hanging">
+        <list hangIndent="4" style="format %d)">
           <t>6tisch nodes already have to have a 6top CoAP server for schedule provising</t>
           <t>this permits the JCE to manage how many nodes are trying to join at the same time,
           and limit how much bandwidth/energy is used for the join operation, and also for the

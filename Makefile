@@ -1,4 +1,4 @@
-VERSION=00
+VERSION=01
 
 DRAFT=draft-richardson-6tisch-security-6top
 DRAFT1=draft-richardson-6tisch-security-architecture
