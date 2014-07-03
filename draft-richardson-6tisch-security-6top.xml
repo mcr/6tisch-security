@@ -69,7 +69,55 @@
     </section>
 
     <section title="time sequence diagram">
-      <t/>
+      <t>
+        <figure align="center" anchor="TimeSequenceJoin"
+                title="Message sequence for JOIN message">
+          <preamble/>
+
+          <artwork align="left">
+            <![CDATA[
+   +---------+                +----------+                +-----------+
+   |         |                |  JOIN    |                |  Joining  |
+   |  P C E  |                | Assistant|                |   Node    |
+   |         |                |  (proxy) |                |           |
+   +---------+                +----------+                +-----------+
+       |                           |                            |
+       |                           |-------BEACON (1)---------->|
+       |                           |                            |
+       |                           |                            |
+       |                           |<------CERTIFICATE----------|
+       |                           |         REQUEST (2)        |
+       |                           |                            |
+       |                           |                            |
+       |                           |-------CERTIFICATE--------->|
+       |                           |        RESPONSE (multiple) |
+       |                           |                 (packets)  |
+       |                           |                            |
+       |<--------------------------|<-----JOIN REQUEST (4) -----|
+       |                           |                            |
+       |<------ServerHello-(E)-----|                            |
+       |                           |------- claim device -(F)-->|
+       |                           |                  [update audit log]
+       |                           |<----- authz token --(G)----|
+       |                           |      (802.1AR cert)        |
+       |                           |                            |
+       |                  [ still accept device?]               |
+       |<----ServerCertificate-(H)-|                            |
+       |                           |                            |
+  [validate cert chain? (I)]       |                            |
+       |                           |                            |
+       |---ClientCertificate-(J)-->|                            |
+       |                           |                            |
+       |                           |                            |
+       |----domain enrolment------>|                            |
+       |<----domain certificate----|                            |
+            ]]>
+          </artwork>
+
+          <postamble/>
+        </figure>
+
+      </t>
 
       <section title="explanation of each step">
         <t/>
