@@ -4,8 +4,8 @@
 
 Network Working Group                                      M. Richardson
 Internet-Draft                                                       SSW
-Intended status: Informational                                 June 2014
-Expires: December 3, 2014
+Intended status: Informational                              July 4, 2014
+Expires: January 5, 2015
 
 
               table of contents for security architecture
@@ -30,7 +30,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on December 3, 2014.
+   This Internet-Draft will expire on January 5, 2015.
 
 Copyright Notice
 
@@ -53,9 +53,9 @@ Copyright Notice
 
 
 
-Richardson              Expires December 3, 2014                [Page 1]
+Richardson               Expires January 5, 2015                [Page 1]
 
-Internet-Draft          6tisch-table-of-contents               June 2014
+Internet-Draft          6tisch-table-of-contents               July 2014
 
 
 Table of Contents
@@ -109,9 +109,9 @@ Table of Contents
 
 
 
-Richardson              Expires December 3, 2014                [Page 2]
+Richardson               Expires January 5, 2015                [Page 2]
 
-Internet-Draft          6tisch-table-of-contents               June 2014
+Internet-Draft          6tisch-table-of-contents               July 2014
 
 
 2.  protocol requirements/constraints/assumptions
@@ -165,9 +165,9 @@ Internet-Draft          6tisch-table-of-contents               June 2014
 
 
 
-Richardson              Expires December 3, 2014                [Page 3]
+Richardson               Expires January 5, 2015                [Page 3]
 
-Internet-Draft          6tisch-table-of-contents               June 2014
+Internet-Draft          6tisch-table-of-contents               July 2014
 
 
 9.1.  how to determine a proxy/PCE from a end node
@@ -221,4 +221,4 @@ Author's Address
 
 
 
-Richardson              Expires December 3, 2014                [Page 4]
+Richardson               Expires January 5, 2015                [Page 4]
