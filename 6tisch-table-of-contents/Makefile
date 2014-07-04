@@ -1,4 +1,4 @@
-VERSION=00
+VERSION=02
 DRAFT=draft-richardson-6tisch-table-of-contents
 
 ${DRAFT}-${VERSION}.txt: ${DRAFT}.txt
