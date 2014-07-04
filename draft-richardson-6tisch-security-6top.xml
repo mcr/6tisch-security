@@ -4,7 +4,7 @@
 ]>
 <?rfc toc="yes"?>
 <?rfc symrefs="yes"?>
-<rfc category="info" docName="draft-richardson-6tisch--security-6top-00"
+<rfc category="info" docName="draft-richardson-6tisch--security-6top-01"
      ipr="trust200902">
   <front>
     <title abbrev="6tisch-6top">6tisch secure join using 6top</title>
@@ -248,8 +248,93 @@
     </section>
     <section title="security requirements">
       <section title="threat model">
-        <t>There are three kinds of threats that a join process must deal with: a joining
+        <t>There are three kinds of threats that a join process must deal with: threats to the
+        joining node, threats to the resources of the network, and threats to other joining nodes.
         </t>
+        <section title="threats to the joining node">
+          <t>
+            A node may be taken out of it's box by a malicious entity and powered on.  This could happen
+            during shipping, while being stored in a warehouse. The device may be subject to physical theft,
+            or the goal of the attacker may be to turn the device into a trojan horse of some kind. Physical
+            protection of the device is out of scope for this document; this document will henceforth assume
+            that the device is sealed in some tamper-evident way and this document deals with attacks over
+            the network.
+          </t>
+          <t>
+            An attacker may attempt to convince the joining node that it is the legitimate Production
+            Network; this is done by putting up a legitimate looking Join Network, and following the protocol
+            as described in this document.  The Joining Node can not know if it has the corrrect Production
+            Network until steps 11-13, when it attempts to validate the ClientCertificate provided by
+            the JCE.   
+          </t>
+          <t>
+            When the joining node determines that this is the incorrect network, it must remember the
+            PANID of the network that it has attempted to join, and then look for another network
+            to try.  It SHOULD have some limit as the number of times it will try before going back
+            to sleep, or shutting down, and it SHOULD take care not to consume more than some specified
+            percentage of any battery it might have.
+          </t>
+          <t>
+            Should a malicious production network be present at the same time/place as the legitimate
+            production network, a the malicious agent could intercept and replay various packets from
+            the proper join network, but ultimately this either results in a jamming-like denial of service,
+            and/or the the ClientCertificate will not validate.
+          </t>
+          <t>
+            It is a legitimate situation for there to be multiple possible join networks, and the joining
+            node may have to try each one before it finds the network that it the right one for it.
+            The incorrect, but non-malicious networks will not attempt the 6top provisioning step, and
+            SHOULD return a negative result in steps 8/9, refusing the node's NS.  Those incorrect networks
+            will be recognize that the node does not belong to them, because they will be able to see
+            the Joining Node's IDevID in the ARO of step 4.
+          </t>
+        </section>
+        <section title="threats to the resources of the network">
+          <t>
+            The production network has two important resources that may be attacked by malicious
+            Joining nodes: 1) energy/bandwidth, 2) memory for routing entries.
+          </t>
+          <t>
+            A malicious joining node could send many NS messages to the Join Assistant (from many made
+            up addresses), which would  
+            send many NS/DAR messages to the 6LBR, and this would consume bandwidth, and therefore
+            energy from the members of the mesh along the path to the 6LBR.  This can be mitigated
+            by limited the total bandwidth available for joining.
+          </t>
+          <t> 
+            A malicious joining node could send many NS messages, and if the 6LBR agreed to accept the
+            new node (by IDevID), then the Join Assistant would MAY inject routing information into
+            mesh for the Joining node.  Non-storing DODAGs store are routing information in the DODAG
+            Root (probably the 6LBR), which is generally not a constrained node.  Storing DODAGs
+            store routing entries at all nodes up to the DODAG, and those are constrained nodes.
+            Using a separate Join DODAG, and having that DODAG be non-storing will reduce any impact
+            on intermediate nodes, but it does cause resources to be used for the second DODAG, and
+            it may have a code impact if the nodes otherwise would not implement non-storing RPL.
+          </t>
+        </section>
+        <section title="threats to other joining nodes">
+          <t>
+            A joining node (or the nodes of a malicious network, co-located near the legitimate production
+            network) may mount attacks on legitimate nodes which have not yet joined. 
+          </t>
+          <t>
+            The malicious nodes may attempt to perform 6top operations against the joining node to keep
+            it from being able to respond to the legitimate 6top session from the legitimate JCE.  
+            During the Join phase, the Joining node MUST have all other resources and protocols turned
+            off, even if they would normally be accessible as read-only unauthenticated CoAP resources.
+          </t>
+          <t>
+            Malicious nodes could use the Join Network to mount various DTLS based attacks against
+            the joining node, such as sending very long certificate chains to validate.  One might think
+            to limit the length of such chains, but as shown in <xref target="I-D.richardson-6tisch-idevid-cert" /> 
+            the chain may as a long as the supplier chain, plus may include additional certificates due
+            to resales of plants/equipment/etc.  Validating from a trusted certificate down to the 
+            specific certificate which proves ownership would eliminate random certificate chains,
+            but the attacker could just feed the joining node legitimate chains that it observed
+            (and replayed) from the legitimate JCE.  This does no good; the Joining node finds
+            that the DTLS connection is invalid, but it may significantly run batteries down.
+          </t>
+        </section>
       </section>
 
       <section title="implementation cost">
@@ -431,7 +516,12 @@
     </section>
 
     <section title="resulting security properties obtained from this process">
-      <t/>
+      <t>
+        An end to end IPv6 CoAP/DTLS connection is created between the JCE and the
+        Joining Node.  This connection carries 6top commands to update security
+        parameters.  This results in either deployment of a single-level, locally
+        relevant certificate, or deployment of a network-wide symmetric "Master Key"
+      </t>
     </section>
 
     <section title="deployment scenarios underlying protocol requirements">
@@ -459,7 +549,15 @@
       </section>
 
       <section title="privacy aspects">
-        <t/>
+        <t>
+          The EUI-64 of the Joining node is transmitted using a Well Known layer-2 encryption key.
+          Within the ARO/EARO of the Neighbour Solicitation is an OUI, which may be identical
+          to the EUI-64 of the Joining node, or it might be an unrelated IDevID.
+        </t>
+        <t>
+          An eavesdropper can therefore learn something about the manufacturer of every device
+          as it joins.
+        </t>
       </section>
     </section>
 
