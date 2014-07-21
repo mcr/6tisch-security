@@ -99,7 +99,7 @@
           <t hangText="Authz Server/ACE">the Authorization Server. This offloads calculation of access control lists and other access control decisions for constrainted nodes. See <xref target="I-D.seitz-ace-problem-description"/></t>
           <t hangText="6top">the 6top protocol is defined abstractly in
           <xref target="I-D.ietf-6tisch-6top-interface"/> and mapped to run over CoAP in
-          <xref target="I-D.ietf-6tisch-6top-coap" />. The 6top protocol is defined primarily
+          <xref target="I-D.ietf-6tisch-coap" />. The 6top protocol is defined primarily
           to provision the 6TiSCH schedule; this document proposes to extend it for also
           provisioning of layer-2 security parameters.
           </t>
@@ -128,8 +128,8 @@
         provisioned by some local means, such as the 6top mechanism defined in this document.
         </t>
         <t hangText="CoAP">The CoAP protocol, defined in <xref target="RFC7252" /> is an HTTP-like
-        resource access protocol.  CoAP runs over UDP.
-        <t hangtext="DTLS"> The datagram version of TLS, defined in <xref target="RFC6347" />, and which can be used to secure CoAP in the same way that TLS secures HTTP.
+        resource access protocol.  CoAP runs over UDP.</t>
+        <t hangText="DTLS"> The datagram version of TLS, defined in <xref target="RFC6347" />, and which can be used to secure CoAP in the same way that TLS secures HTTP.</t>
         <t hangText="ARO"> <xref target="RFC6775" />defines a number of new Neighbor Discovery options including the Address Registration Option</t>
         <t hangText="DAR/DAC"> <xref target="RFC6775" />defines the Duplicate Address Request and Duplicate Address Confirmation options to turn the multicasted Duplicate Address Detection protocol into a client/server process</t>
         <t hangText="EARO"> <xref target="I-D.thubert-6lo-rfc6775-update-reqs" />extends the ARO option to include some additional fields necessary to distinguish duplicate addresses from
@@ -405,11 +405,11 @@
 
           <artwork align="left">
             <![CDATA[
-+-----+   +------+            +----------+                +-----------+
-|     |   |      |            |  JOIN    |                |  Joining  |
-| JCE |   | 6LBR |            | Assistant|                |   Node    |
-+-----+   +------+            |  (proxy) |                |           |
-   |         |                +----------+                +-----------+
++-----+   +------+            +----------+              +-----------+
+|     |   |      |            |  JOIN    |              |  Joining  |
+| JCE |   | 6LBR |            | Assistant|              |   Node    |
++-----+   +------+            |  (proxy) |              |           |
+   |         |                +----------+              +-----------+
    |         |                     |                            |
    |         |                     |-------BEACON (1)---------->|
    |         |                     |                            |
@@ -666,13 +666,15 @@
       <?rfc include="reference.I-D.seitz-ace-problem-description" ?>
       <?rfc include="reference.I-D.richardson-6tisch-idevid-cert" ?>
       <?rfc include="reference.I-D.wang-6tisch-6top-sublayer" ?>
+      <?ref include="reference.I-D.thubert-6lo-rfc6775-update-reqs" ?>
     </references>
 
     <references title="Informative references">
+      <?rfc include="reference.RFC.5280" ?>
       <?rfc include="reference.RFC.7252" ?>
       <?rfc include="reference.RFC.6347" ?>
       <?rfc include="reference.I-D.thubert-6lowpan-backbone-router" ?>
-      <?rfc include="reference.I-D.draft-ietf-netconf-zerotouch" ?>
+      <?rfc include="reference.I-D.ietf-netconf-zerotouch" ?>
       <?rfc include="reference.I-D.kelsey-intarea-mesh-link-establishment" ?>
       <?rfc include="reference.I-D.ohba-6tisch-security" ?>
       <?rfc include="reference.I-D.piro-6tisch-security-issues" ?>
