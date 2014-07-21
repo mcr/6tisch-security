@@ -4,7 +4,7 @@
 ]>
 <?rfc toc="yes"?>
 <?rfc symrefs="yes"?>
-<rfc category="info" docName="draft-richardson-6tisch--security-6top-01"
+<rfc category="info" docName="draft-richardson-6tisch--security-6top-02"
      ipr="trust200902">
   <front>
     <title abbrev="6tisch-6top">6tisch secure join using 6top</title>
