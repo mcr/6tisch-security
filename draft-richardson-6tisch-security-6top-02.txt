@@ -9,7 +9,7 @@ Expires: January 22, 2015
 
 
                      6tisch secure join using 6top
-               draft-richardson-6tisch--security-6top-01
+               draft-richardson-6tisch--security-6top-02
 
 Abstract
 
