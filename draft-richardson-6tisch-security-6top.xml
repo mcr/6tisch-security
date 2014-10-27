@@ -4,7 +4,7 @@
 ]>
 <?rfc toc="yes"?>
 <?rfc symrefs="yes"?>
-<rfc category="info" docName="draft-richardson-6tisch--security-6top-02"
+<rfc category="info" docName="draft-richardson-6tisch--security-6top-03"
      ipr="trust200902">
   <front>
     <title abbrev="6tisch-6top">6tisch secure join using 6top</title>
@@ -99,9 +99,14 @@
       <t>The following roles/things are defined:
         <list hangIndent="20" style="hanging">
           <t hangText="PCE">the Path Computation Engine. This entity reaches out to each of the nodes in the LLN, and configures an appropriate schedule using 6top.</t>
-          <t hangText="Authz Server/ACE">the Authorization Server. This offloads calculation of access control lists and other access control decisions for constrained nodes. See <xref target="I-D.seitz-ace-problem-description"/></t>
+          <t hangText="Authz Server/ACE">the Authorization Server. This offloads calculation of access control lists and other access control decisions for constrainted nodes. See <xref target="I-D.seitz-ace-problem-description"/></t>
+          <t hangText="6top">the 6top protocol is defined abstractly in
+          <xref target="I-D.ietf-6tisch-6top-interface"/> and mapped to run over CoAP in
+          <xref target="I-D.ietf-6tisch-coap" />. The 6top protocol is defined primarily
+          to provision the 6TiSCH schedule; this document proposes to extend it for also
+          provisioning of layer-2 security parameters.
+          </t>
           <t hangText="JCE">the Join Coordination Entity. This acronym is chosen to parallel the PCE.</t>
-          <t hangText="802.1AR">a certificate created according the specification in <xref target="IEEE.802.1AR" /></t>
           <t hangText="joining node"> The newly unboxed constrained node that needs to join a network.</t>
           <t hangText="join protocol"> the protocol which secures initial communication between the joining node and the JCE</t>
           <t hangText="join assistant"> A constrained node near the joining node that will act as it's first
@@ -114,6 +119,31 @@
           <t hangText="per-peer L2 key"> a key that results from an exchange (such as MLE) that creates a pair-wise L2 key which is known only to the two nodes involved,  <xref target="I-D.piro-6tisch-security-issues"/> calls this a LinkKey</t>
         </list>
       </t>
+
+      <t>The following terms are used in this document and come from other documents:
+      <list hangIndent="20" style="hanging">
+        <t hangText="DevID"><xref target="IEEE.802.1AR" /> defines the
+        secure DEVice IDentifier as
+        a device identifier that is cryptographically bound to the device and
+        is composed of the Secure Device Identifier Secret and the
+        Secure Device Identifier Credential.</t>
+        <t hangText="IDevID">The Initial secure DEVice IDentifier (IDevID)
+        is the Device Identifier which was installed on the device by the manufacturer.</t>
+        <t hangText="LDevID">A Locally significant secure DEVice IDentifiers (LDevIDs) is
+        a Secure Device Identifier credential that is unique in the local administrative
+        domain in which the device is used.  The LDevID is usually a new certificate
+        provisioned by some local means, such as the 6top mechanism defined in this document.
+        </t>
+        <t hangText="CoAP">The CoAP protocol, defined in <xref target="RFC7252" /> is an HTTP-like
+        resource access protocol.  CoAP runs over UDP.</t>
+        <t hangText="DTLS"> The datagram version of TLS, defined in <xref target="RFC6347" />, and which can be used to secure CoAP in the same way that TLS secures HTTP.</t>
+        <t hangText="ARO"> <xref target="RFC6775" />defines a number of new Neighbor Discovery options including the Address Registration Option</t>
+        <t hangText="DAR/DAC"> <xref target="RFC6775" />defines the Duplicate Address Request and Duplicate Address Confirmation options to turn the multicasted Duplicate Address Detection protocol into a client/server process</t>
+        <t hangText="EARO"> <xref target="I-D.thubert-6lo-rfc6775-update-reqs" />extends the ARO option to include some additional fields necessary to distinguish duplicate addresses from
+        nodes that have moved networks when there are mulitple LLNs linked over a backbone.</t>
+      </list>
+      </t>
+
     </section>
 
 <!-- section 3: ARCHITECTURE -->
@@ -151,8 +181,10 @@
         established between the JCE and the joining node.
       </t>
       <t>
-        <xref target="I-D.ietf-6tisch-6top-interface"/> presents a way to interface to a 6top MIB.
-        <xref target="I-D.ietf-6tisch-coap" /> explains how to access that MIB using CoAP.
+        <xref target="I-D.ietf-6tisch-6top-interface"/> presents a way to interface to a 6top
+        information model (defined in YANG).
+        <xref target="I-D.ietf-6tisch-coap" /> explains how to access that
+        information model using CoAP.
         That model is to be extended to include security attributes for the network.   The JCE would
         therefore reach out to the joining node and simply provision appropriate security properties
         into the joining node, much like the PCE will provision schedules.
@@ -234,13 +266,23 @@
       </t>
       <t>
         In addition to needing to know the joining devices address from the DAR/NS, the JCE also needs to
-        know the joining node' IDevID.   If the IDevID is less than 64 bits, then it is possible that it
-        could be placed into the EUI-64 option of the ARO, or the OUI of the
-        <xref target="I-D.thubert-6lowpan-backbone-router"/> EARO.  The JCE needs to know the joining
-        node's IDevID to know if this is device that it should even attempt to provision; and if so,
+        know the joining node' IDevID.   If the serialNumber attribute of the IDevID is less than
+        64 bits, then it is possible that it could be placed into the EUI-64 option of the ARO, or
+        the OUI of the
+        <xref target="I-D.thubert-6lo-rfc6775-update-reqs"/> EARO.  The JCE needs to know the
+        joining node's serialNumber to know if this is device that it should even attempt to
+        provision; and if so,
         it may need to retrieve an appropriate certificate chain
-        (see <xref target="I-D.richardson-6tisch-idevid-cert" />) from the Factory in order for the JCE
-        to prove it is the legitimate owner of the joining node.
+        (see <xref target="I-D.richardson-6tisch-idevid-cert" />) from the Factory in order
+        for the JCE to prove it is the legitimate owner of the joining node.
+      </t>
+      <t>
+        Neither 802.1AR nor <xref target="RFC5280" /> provide any structure for the serialNumber,
+        except that they are positive integers of up-to 20 octets in size (numbers up to 2^160).
+        This specification would require that the serialNumber encoded in the IDevID is the same
+        as the EUI-64 used by the device.  Some consideration needs to be given as to whether
+        there are privacy considerations to doing this: any observer that can see the join traffic,
+        can also see the source MAC address of the node as well.
       </t>
       <t>
         Prior to being able to announce itself in a NS, the joining node needs to find the Join Network.
@@ -387,22 +429,22 @@
 
           <artwork align="left">
             <![CDATA[
-+-----+   +------+            +----------+                +-----------+
-|     |   |      |            |  JOIN    |                |  Joining  |
-| JCE |   | 6LBR |            | Assistant|                |   Node    |
-+-----+   +------+            |  (proxy) |                |           |
-   |         |                +----------+                +-----------+
++-----+   +------+            +----------+              +-----------+
+|     |   |      |            |  JOIN    |              |  Joining  |
+| JCE |   | 6LBR |            | Assistant|              |   Node    |
++-----+   +------+            |  (proxy) |              |           |
+   |         |                +----------+              +-----------+
    |         |                     |                            |
    |         |                     |-------BEACON (1)---------->|
    |         |                     |                            |
    |         |                     |<----Router Solicitation----|
    |         |                     |---Router Advertisement---->|
    |         |                     |                            |
-   |         |                     |<------CERTIFICATE----------|
-   |         |                     |         REQUEST (2)        |
+   |         |                     |<------CERT CACHE-----------|
+   |         |                     |         LOAD    (2)        |
    |         |                     |                            |
    |         |                     |                            |
-   |         |                     |-------CERTIFICATE--------->|
+   |         |                     |-------CERT CACHE---------->|
    |         |                     |        RESPONSE (multiple) |
    |         |                     |                 (packets)  |
    |         |                     |                            |
@@ -467,21 +509,23 @@
             packets, and should contain a prefix appropriate for join traffic.
           </t>
         </section>
-        <section title="step (2): acquire authorizer key">
-          <t>Step (4) will involve doing a public key encryption to node
-          performing the authorization management role. In order to do this,
-          the new node needs to know the public key of the manager, and so in
-          this step it requests that certificate from the neighbour that that
-          it received the beacon from.</t>
-          <t>This step is optional, and it's benefit has not been demonstrated by
-          a real world use case, but has been retained for now</t>
+        <section title="step (2): certificate cache load">
+          <t>At step 10, the JCE will need to present a certificate chain
+          anchored at a trusted CA built into the joining node.
+          It has been speculated that a significant amount of traffic could
+          be avoided at step (10) if the common parts of the certificate chains
+          could be cached in the join assistant.
+          </t>
+          <t>
+            This optional step involves the joining node asking for certificates
+            from the join assistant.
+          </t>
         </section>
 
-        <section title="step (3): receive authorizer key">
-          <t>the proxy neighbour sends the key in one or more messages, along
-          with the address of the authorizing server. The address of the
-          authorization server could be an attribute of the certificate that
-          is received.</t>
+        <section title="step (3): receive certificate cache">
+          <t>the proxy neighbour sends requested cached certificates to the
+          joining node
+          </t>
         </section>
 
         <section title="step (4): join request">
@@ -544,7 +588,7 @@
         An end to end IPv6 CoAP/DTLS connection is created between the JCE and the
         Joining Node.  This connection carries 6top commands to update security
         parameters.  This results in either deployment of a single-level, locally
-        relevant certificate, or deployment of a network-wide symmetric "Master Key"
+        relevant certificate (LDevID), or deployment of a network-wide symmetric "Master Key"
       </t>
     </section>
 
@@ -644,13 +688,19 @@
       <?rfc include="reference.I-D.ietf-6tisch-coap" ?>
       <?rfc include="reference.I-D.ietf-6tisch-6top-interface" ?>
       <?rfc include="reference.I-D.ietf-6tisch-architecture" ?>
+      <?rfc include="reference.I-D.irtf-nmrg-autonomic-network-definitions" ?>
       <?rfc include="reference.I-D.seitz-ace-problem-description" ?>
       <?rfc include="reference.I-D.richardson-6tisch-idevid-cert" ?>
       <?rfc include="reference.I-D.wang-6tisch-6top-sublayer" ?>
+      <?ref include="reference.I-D.thubert-6lo-rfc6775-update-reqs" ?>
     </references>
 
     <references title="Informative references">
+      <?rfc include="reference.RFC.5280" ?>
+      <?rfc include="reference.RFC.7252" ?>
+      <?rfc include="reference.RFC.6347" ?>
       <?rfc include="reference.I-D.thubert-6lowpan-backbone-router" ?>
+      <?rfc include="reference.I-D.ietf-netconf-zerotouch" ?>
       <?rfc include="reference.I-D.kelsey-intarea-mesh-link-establishment" ?>
       <?rfc include="reference.I-D.ohba-6tisch-security" ?>
       <?rfc include="reference.I-D.piro-6tisch-security-issues" ?>

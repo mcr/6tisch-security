@@ -4,8 +4,8 @@
 
 Network Working Group                                      M. Richardson
 Internet-Draft                                                       SSW
-Intended status: Informational                          October 26, 2014
-Expires: April 29, 2015
+Intended status: Informational                             July 21, 2014
+Expires: January 22, 2015
 
 
                      6tisch secure join using 6top
@@ -42,7 +42,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on April 29, 2015.
+   This Internet-Draft will expire on January 22, 2015.
 
 Copyright Notice
 
@@ -53,9 +53,9 @@ Copyright Notice
 
 
 
-Richardson               Expires April 29, 2015                 [Page 1]
+Richardson              Expires January 22, 2015                [Page 1]
 
-Internet-Draft                 6tisch-6top                  October 2014
+Internet-Draft                 6tisch-6top                     July 2014
 
 
    This document is subject to BCP 78 and the IETF Trust's Legal
@@ -73,24 +73,24 @@ Table of Contents
    1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   3
      1.1.  Assumptions . . . . . . . . . . . . . . . . . . . . . . .   3
    2.  Terminology and Roles . . . . . . . . . . . . . . . . . . . .   4
-   3.  Architectural requirements of join protocol . . . . . . . . .   5
-     3.1.  prefixes to use for join traffic  . . . . . . . . . . . .   8
+   3.  Architectural requirements of join protocol . . . . . . . . .   6
+     3.1.  prefixes to use for join traffic  . . . . . . . . . . . .   9
    4.  security requirements . . . . . . . . . . . . . . . . . . . .   9
      4.1.  threat model  . . . . . . . . . . . . . . . . . . . . . .   9
        4.1.1.  threats to the joining node . . . . . . . . . . . . .   9
        4.1.2.  threats to the resources of the network . . . . . . .  10
-       4.1.3.  threats to other joining nodes  . . . . . . . . . . .  10
+       4.1.3.  threats to other joining nodes  . . . . . . . . . . .  11
      4.2.  implementation cost . . . . . . . . . . . . . . . . . . .  11
      4.3.  denial of service . . . . . . . . . . . . . . . . . . . .  11
-   5.  protocol requirements/constraints/assumptions . . . . . . . .  11
-     5.1.  inline/offline  . . . . . . . . . . . . . . . . . . . . .  11
-   6.  time sequence diagram . . . . . . . . . . . . . . . . . . . .  11
-     6.1.  explanation of each step  . . . . . . . . . . . . . . . .  12
+   5.  protocol requirements/constraints/assumptions . . . . . . . .  12
+     5.1.  inline/offline  . . . . . . . . . . . . . . . . . . . . .  12
+   6.  time sequence diagram . . . . . . . . . . . . . . . . . . . .  12
+     6.1.  explanation of each step  . . . . . . . . . . . . . . . .  13
        6.1.1.  step (1): enhanced beacon . . . . . . . . . . . . . .  13
        6.1.2.  step (1B): send router solicitation . . . . . . . . .  13
        6.1.3.  step (1C): receive router advertisement . . . . . . .  13
-       6.1.4.  step (2): acquire authorizer key  . . . . . . . . . .  13
-       6.1.5.  step (3): receive authorizer key  . . . . . . . . . .  13
+       6.1.4.  step (2): certificate cache load  . . . . . . . . . .  13
+       6.1.5.  step (3): receive certificate cache . . . . . . . . .  14
        6.1.6.  step (4): join request  . . . . . . . . . . . . . . .  14
        6.1.7.  step (5): NS duplicate address request (DAR)  . . . .  14
        6.1.8.  step (7): 6LBR informs JCE of new node  . . . . . . .  14
@@ -109,9 +109,9 @@ Table of Contents
 
 
 
-Richardson               Expires April 29, 2015                 [Page 2]
+Richardson              Expires January 22, 2015                [Page 2]
 
-Internet-Draft                 6tisch-6top                  October 2014
+Internet-Draft                 6tisch-6top                     July 2014
 
 
      9.2.  Time source authentication / time validation  . . . . . .  15
@@ -129,9 +129,9 @@ Internet-Draft                 6tisch-6top                  October 2014
    17. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  16
    18. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  16
    19. References  . . . . . . . . . . . . . . . . . . . . . . . . .  16
-     19.1.  Normative references . . . . . . . . . . . . . . . . . .  16
+     19.1.  Normative references . . . . . . . . . . . . . . . . . .  17
      19.2.  Informative references . . . . . . . . . . . . . . . . .  18
-   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  18
+   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  19
 
 1.  Introduction
 
@@ -165,9 +165,9 @@ Internet-Draft                 6tisch-6top                  October 2014
 
 
 
-Richardson               Expires April 29, 2015                 [Page 3]
+Richardson              Expires January 22, 2015                [Page 3]
 
-Internet-Draft                 6tisch-6top                  October 2014
+Internet-Draft                 6tisch-6top                     July 2014
 
 
    different systems, not because they have to be.  Different
@@ -192,20 +192,22 @@ Internet-Draft                 6tisch-6top                  October 2014
 
    Authz Server/ACE    the Authorization Server.  This offloads
                        calculation of access control lists and other
-                       access control decisions for constrained nodes.
+                       access control decisions for constrainted nodes.
                        See [I-D.seitz-ace-problem-description]
+
+   6top                the 6top protocol is defined abstractly in
+                       [I-D.ietf-6tisch-6top-interface] and mapped to
+                       run over CoAP in [I-D.ietf-6tisch-coap].  The
+                       6top protocol is defined primarily to provision
+                       the 6TiSCH schedule; this document proposes to
+                       extend it for also provisioning of layer-2
+                       security parameters.
 
    JCE                 the Join Coordination Entity.  This acronym is
                        chosen to parallel the PCE.
 
-   802.1AR             a certificate created according the specification
-                       in [IEEE.802.1AR]
-
    joining node        The newly unboxed constrained node that needs to
                        join a network.
-
-   join protocol       the protocol which secures initial communication
-                       between the joining node and the JCE
 
    join assistant      A constrained node near the joining node that
                        will act as it's first 6LR, and will relay
@@ -214,88 +216,102 @@ Internet-Draft                 6tisch-6top                  October 2014
    join network        A 802.15.4e network whose encryption and
                        authentication key is "JOIN6TISCH".
 
-   unique join key     a key shared between a newly joining node, and
-                       the JCE
-
-
-
-
-
-Richardson               Expires April 29, 2015                 [Page 4]
-
-Internet-Draft                 6tisch-6top                  October 2014
-
-
    production network  A 802.15.4e network whose encryption/
                        authentication keys are determined by some
+
+
+
+Richardson              Expires January 22, 2015                [Page 4]
+
+Internet-Draft                 6tisch-6top                     July 2014
+
+
                        algorithm.  There may have network-wide group
                        keys, or per-link keys.
 
-   production network key  A shared L2-key known by all authorized
-                       nodes.  This key can be used to derive other
-                       keys.
+   The following terms are used in this document and come from other
+   documents:
 
-   per-peer L2 key     a key that results from an exchange (such as MLE)
-                       that creates a pair-wise L2 key which is known
-                       only to the two nodes involved,
-                       [I-D.piro-6tisch-security-issues] calls this a
-                       LinkKey
+   DevID               [IEEE.802.1AR] defines the secure DEVice
+                       IDentifier as a device identifier that is
+                       cryptographically bound to the device and is
+                       composed of the Secure Device Identifier Secret
+                       and the Secure Device Identifier Credential.
+
+   IDevID              The Initial secure DEVice IDentifier (IDevID) is
+                       the Device Identifier which was installed on the
+                       device by the manufacturer.
+
+   LDevID              A Locally significant secure DEVice IDentifiers
+                       (LDevIDs) is a Secure Device Identifier
+                       credential that is unique in the local
+                       administrative domain in which the device is
+                       used.  The LDevID is usually a new certificate
+                       provisioned by some local means, such as the 6top
+                       mechanism defined in this document.
+
+   CoAP                The CoAP protocol, defined in [RFC7252] is an
+                       HTTP-like resource access protocol.  CoAP runs
+                       over UDP.
+
+   DTLS                The datagram version of TLS, defined in
+                       [RFC6347], and which can be used to secure CoAP
+                       in the same way that TLS secures HTTP.
+
+   ARO                 [RFC6775]defines a number of new Neighbor
+                       Discovery options including the Address
+                       Registration Option
+
+   DAR/DAC             [RFC6775]defines the Duplicate Address Request
+                       and Duplicate Address Confirmation options to
+                       turn the multicasted Duplicate Address Detection
+                       protocol into a client/server process
+
+   EARO                [I-D.thubert-6lo-rfc6775-update-reqs]extends the
+                       ARO option to include some additional fields
+                       necessary to distinguish duplicate addresses from
+                       nodes that have moved networks when there are
+                       mulitple LLNs linked over a backbone.
+
+
+
+
+
+Richardson              Expires January 22, 2015                [Page 5]
+
+Internet-Draft                 6tisch-6top                     July 2014
+
 
 3.  Architectural requirements of join protocol
 
    This section works from the ultimate goal, and goes backwards to
-   prerequisite actions.  Section 6 presents the protocol from beginning
+   prerequisit actions.  Section 6 presents the protocol from beginning
    to end order.
 
    The ultimate goal of the join protocol is to provide a new node with
    enough locally significant security credentials that it is able to
    take part in the network directly.  The credentials may vary by
-   deployment.  They can be one of:
+   deployment.  They can be:
 
-   1)  a network-wide shared symmetric key (this is the production
-       network key, or MasterKey)
+   1)  a network-wide shared symmetric key
 
    2)  a locally significant (one-level only) 802.11AR type DevID
-       certificate (which allows it to negotiate a pair-wise key)
-
-   One of these items is communicated by the JCE to the joining node
-   using the 6top protocol.  The authentication of this communication
-   channel is the subject of the Join Protocol as explained below.
+       certificate
 
    Given one of the the above, there are a number of possible protocols
    that can be used to generate layer-2 sessions keys for the node,
    including:
 
    1)  Mesh Link Exchange [I-D.kelsey-intarea-mesh-link-establishment]
-       (IMPORTANT, a good option.  Uses certificates from common CA)
 
-   2)  work in 802.15.9 (uses certificates from common CA)
+   2)  work in 802.15.9
 
    3)  Security Framework and Key Management Protocol Requirements for
        6TiSCH [I-D.ohba-6tisch-security] (this document provides the
-       phase 0 required, using the network-wide shared key)
-
-
-
-Richardson               Expires April 29, 2015                 [Page 5]
-
-Internet-Draft                 6tisch-6top                  October 2014
-
+       phase 0 required)
 
    4)  Layer-2 security aspects for the IEEE 802.15.4e MAC
-       [I-D.piro-6tisch-security-issues]: the MasterKey is used to
-       derive per-peer L2 keys
-
-   Per-peer L2 keying is critical when doing peer2peer schedule
-   negotiation over 15.4 Information Elements.  Therefore a network-wide
-   layer-2 key is inappropriate for the self-organizing networks, and a
-   protocol (MLE, 802.15.9) SHOULD be used to derive per-peer L2 keys.
-
-   For networks where there is a PCE present and will do all schedule
-   computation, then the only trust relationship necessary is between
-   the individual node and the PCE, and it MAY be acceptable to have a
-   network-wide L2 key derived in ways such as
-   [I-D.piro-6tisch-security-issues] describes in section ?
+       [I-D.piro-6tisch-security-issues]
 
    The intermediate goal of the join protocol is to enable a Join
    Coordination Entity (JCE) to reach out to the new node, and install
@@ -308,11 +324,19 @@ Internet-Draft                 6tisch-6top                  October 2014
    node.
 
    [I-D.ietf-6tisch-6top-interface] presents a way to interface to a
-   6top MIB.  [I-D.ietf-6tisch-coap] explains how to access that MIB
-   using CoAP.  That model is to be extended to include security
-   attributes for the network.  The JCE would therefore reach out to the
-   joining node and simply provision appropriate security properties
-   into the joining node, much like the PCE will provision schedules.
+   6top information model (defined in YANG).  [I-D.ietf-6tisch-coap]
+   explains how to access that information model using CoAP.  That model
+   is to be extended to include security attributes for the network.
+   The JCE would therefore reach out to the joining node and simply
+   provision appropriate security properties into the joining node, much
+   like the PCE will provision schedules.
+
+
+
+Richardson              Expires January 22, 2015                [Page 6]
+
+Internet-Draft                 6tisch-6top                     July 2014
+
 
    This 6top-based secure join protocol has defined a push model for
    security provisioning by the JCE.  This has been done for three
@@ -329,20 +353,11 @@ Internet-Draft                 6tisch-6top                  October 2014
    3)  making the JCE initiate the DTLS connection significantly
        simplies the certificate chains that must be exchanged as the
        most constrained side (the joining node) provides it's
-       credentials first, and lets the less constrained JCE figure out
-
-
-
-Richardson               Expires April 29, 2015                 [Page 6]
-
-Internet-Draft                 6tisch-6top                  October 2014
-
-
-       what kind of certificate chain will be required to authenticate
-       the JCE to the joining node.  In EAP-TLS/802.1x situations, the
-       TLS channel is created in the opposite direction, and it would
-       have to complete in a tentative way, and then further
-       authorization occur in-band.
+       credentials first, and lets the much richer JCE figure out what
+       kind of certificate chain will be required to authenticate the
+       JCE.  In EAP-TLS/802.1x situations, the TLS channel is created in
+       the opposite direction, and it would have to complete in a
+       tentative way, and then further authorization occur in-band.
 
    In order for a 6top/DTLS/CoAP connection to occur between the JCE and
    the joining node, there needs to be end-to-end IPv6 connectivity
@@ -356,16 +371,14 @@ Internet-Draft                 6tisch-6top                  October 2014
    The specific mechanism to enable end to end connectivity with the JCE
    are still open but will consist of one of:
 
-   (1)  IPIP tunnel between Join Assistant and JCE (least preferred)
+   (1)  IPIP tunnel between Join Assistant and JCE
 
    (2)  using straight RPL routing: the Join Assistant sends a DAO
-        (moderate preference)
 
-   (3)  using a separate RPL DODAG for join traffic (could be a non-
-        storing, best practice)
+   (3)  using a separate RPL DODAG for join traffic
 
    (4)  establishing a specific multi-hop 6tisch track for join traffic
-        for each Join Assistant (not always practical)
+      for each Join Assistant
 
    Of these mechanisms, the only one which does not require additional
    state on the Join Assistant (which is also a constrained device) is
@@ -373,6 +386,14 @@ Internet-Draft                 6tisch-6top                  October 2014
    on the Join Assistant.  Mechanism (2), in a non-storing DODAG
    requires additional state on the DODAG root (6LBR) only; while
    mechanism (1) requires a similar amount of state on the JCE.  For
+
+
+
+Richardson              Expires January 22, 2015                [Page 7]
+
+Internet-Draft                 6tisch-6top                     July 2014
+
+
    deployments where the JCE is part of the 6LBR, the amount of state is
    similar, but in any case, the 6LBR is assumed to be a non-constrained
    node.
@@ -386,14 +407,6 @@ Internet-Draft                 6tisch-6top                  October 2014
    restricts the Joining Nodes to sending traffic only to the address of
    the JCE.  (If JCE and 6LBR are colocated, then this is the address in
    the ABRO, if they are not colocated, then this address needs to have
-
-
-
-Richardson               Expires April 29, 2015                 [Page 7]
-
-Internet-Draft                 6tisch-6top                  October 2014
-
-
    been provisioning in the Join Assistant when it joined, or could be
    carried in a new RA option)
 
@@ -413,14 +426,38 @@ Internet-Draft                 6tisch-6top                  October 2014
 
    In addition to needing to know the joining devices address from the
    DAR/NS, the JCE also needs to know the joining node' IDevID.  If the
-   IDevID is less than 64 bits, then it is possible that it could be
-   placed into the EUI-64 option of the ARO, or the OUI of the
-   [I-D.thubert-6lowpan-backbone-router] EARO.  The JCE needs to know
-   the joining node's IDevID to know if this is device that it should
-   even attempt to provision; and if so, it may need to retrieve an
-   appropriate certificate chain (see
+   serialNumber attribute of the IDevID is less than 64 bits, then it is
+   possible that it could be placed into the EUI-64 option of the ARO,
+   or the OUI of the [I-D.thubert-6lo-rfc6775-update-reqs] EARO.  The
+   JCE needs to know the joining node's serialNumber to know if this is
+   device that it should even attempt to provision; and if so, it may
+   need to retrieve an appropriate certificate chain (see
    [I-D.richardson-6tisch-idevid-cert]) from the Factory in order for
    the JCE to prove it is the legitimate owner of the joining node.
+
+
+
+
+
+
+
+
+
+
+
+Richardson              Expires January 22, 2015                [Page 8]
+
+Internet-Draft                 6tisch-6top                     July 2014
+
+
+   Neither 802.1AR nor [RFC5280] provide any structure for the
+   serialNumber, except that they are positive integers of up-to 20
+   octets in size (numbers up to 2^160).  This specification would
+   require that the serialNumber encoded in the IDevID is the same as
+   the EUI-64 used by the device.  Some consideration needs to be given
+   as to whether there are privacy considerations to doing this: any
+   observer that can see the join traffic, can also see the source MAC
+   address of the node as well.
 
    Prior to being able to announce itself in a NS, the joining node
    needs to find the Join Network.  This is done by listening to an
@@ -442,21 +479,13 @@ Internet-Draft                 6tisch-6top                  October 2014
    What prefix would the joining node for communication?  There are
    three options:
 
-
-
-
-Richardson               Expires April 29, 2015                 [Page 8]
-
-Internet-Draft                 6tisch-6top                  October 2014
-
-
    (1)  just use link-local addresses (requires all traffic be tunneled)
 
    (2)  use a prefix specifically for join traffic (may be easier with a
-        join-only DODAG)
+      join-only DODAG)
 
    (3)  use the same prefix as the rest of the traffic (may require more
-        complex ACLs, and leaks information to attackers)
+      complex ACLs, and leaks information to attackers)
 
 4.  security requirements
 
@@ -467,6 +496,15 @@ Internet-Draft                 6tisch-6top                  October 2014
    and threats to other joining nodes.
 
 4.1.1.  threats to the joining node
+
+
+
+
+
+Richardson              Expires January 22, 2015                [Page 9]
+
+Internet-Draft                 6tisch-6top                     July 2014
+
 
    A node may be taken out of it's box by a malicious entity and powered
    on.  This could happen during shipping, while being stored in a
@@ -497,15 +535,6 @@ Internet-Draft                 6tisch-6top                  October 2014
    network, but ultimately this either results in a jamming-like denial
    of service, and/or the the ClientCertificate will not validate.
 
-
-
-
-
-Richardson               Expires April 29, 2015                 [Page 9]
-
-Internet-Draft                 6tisch-6top                  October 2014
-
-
    It is a legitimate situation for there to be multiple possible join
    networks, and the joining node may have to try each one before it
    finds the network that it the right one for it.  The incorrect, but
@@ -525,6 +554,14 @@ Internet-Draft                 6tisch-6top                  October 2014
    Assistant (from many made up addresses), which would send many NS/DAR
    messages to the 6LBR, and this would consume bandwidth, and therefore
    energy from the members of the mesh along the path to the 6LBR.  This
+
+
+
+Richardson              Expires January 22, 2015               [Page 10]
+
+Internet-Draft                 6tisch-6top                     July 2014
+
+
    can be mitigated by limited the total bandwidth available for
    joining.
 
@@ -553,15 +590,6 @@ Internet-Draft                 6tisch-6top                  October 2014
    turned off, even if they would normally be accessible as read-only
    unauthenticated CoAP resources.
 
-
-
-
-
-Richardson               Expires April 29, 2015                [Page 10]
-
-Internet-Draft                 6tisch-6top                  October 2014
-
-
    Malicious nodes could use the Join Network to mount various DTLS
    based attacks against the joining node, such as sending very long
    certificate chains to validate.  One might think to limit the length
@@ -583,6 +611,13 @@ Internet-Draft                 6tisch-6top                  October 2014
 
    other communication impacts of security protocol mechanics
 
+
+
+Richardson              Expires January 22, 2015               [Page 11]
+
+Internet-Draft                 6tisch-6top                     July 2014
+
+
 5.  protocol requirements/constraints/assumptions
 
 5.1.  inline/offline
@@ -593,86 +628,58 @@ Internet-Draft                 6tisch-6top                  October 2014
 6.  time sequence diagram
 
 
+   +-----+   +------+            +----------+              +-----------+
+   |     |   |      |            |  JOIN    |              |  Joining  |
+   | JCE |   | 6LBR |            | Assistant|              |   Node    |
+   +-----+   +------+            |  (proxy) |              |           |
+      |         |                +----------+              +-----------+
+      |         |                     |                            |
+      |         |                     |-------BEACON (1)---------->|
+      |         |                     |                            |
+      |         |                     |<----Router Solicitation----|
+      |         |                     |---Router Advertisement---->|
+      |         |                     |                            |
+      |         |                     |<------CERT CACHE-----------|
+      |         |                     |         LOAD    (2)        |
+      |         |                     |                            |
+      |         |                     |                            |
+      |         |                     |-------CERT CACHE---------->|
+      |         |                     |        RESPONSE (multiple) |
+      |         |                     |                 (packets)  |
+      |         |                     |                            |
+      |         |                     |<-----JOIN REQUEST (4) -----|
+      |         |                     |      (NS w/ARO )           |
+      |         |                     |                            |
+      |         |<---NS (DAR) (5)-----|                            |
+      |<--??(6)-|                     |                            |
+      |         |                     |                            |
+      |--??(7)->|                     |                            |
+      |         |                     |                            |
+      |         |----NS (DAC)-(8)---->|                            |
+      |         |     +------+        |                            |
+      |         |<DAO-| mesh |<--DAO--|                            |
+      |         |-DAO-| node |--DACK->|                            |
+      |         | ACK +------+        |                            |
+      |         |                     |-------JOIN ACK (9)-------->|
+      |         |                     |                            |
+      |         |                     |                            |
+      |================(10)==========>|----------6top----(11)----->|
+      |         |                     |          DTLS              |
+      |<===============(13)===========|<---------CoAP----(12)------|
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Richardson               Expires April 29, 2015                [Page 11]
+Richardson              Expires January 22, 2015               [Page 12]
 
-Internet-Draft                 6tisch-6top                  October 2014
+Internet-Draft                 6tisch-6top                     July 2014
 
 
- +-----+   +------+            +----------+                +-----------+
- |     |   |      |            |  JOIN    |                |  Joining  |
- | JCE |   | 6LBR |            | Assistant|                |   Node    |
- +-----+   +------+            |  (proxy) |                |           |
-    |         |                +----------+                +-----------+
-    |         |                     |                            |
-    |         |                     |-------BEACON (1)---------->|
-    |         |                     |                            |
-    |         |                     |<----Router Solicitation----|
-    |         |                     |---Router Advertisement---->|
-    |         |                     |                            |
-    |         |                     |<------CERTIFICATE----------|
-    |         |                     |         REQUEST (2)        |
-    |         |                     |                            |
-    |         |                     |                            |
-    |         |                     |-------CERTIFICATE--------->|
-    |         |                     |        RESPONSE (multiple) |
-    |         |                     |                 (packets)  |
-    |         |                     |                            |
-    |         |                     |<-----JOIN REQUEST (4) -----|
-    |         |                     |      (NS w/ARO )           |
-    |         |                     |                            |
-    |         |<---NS (DAR) (5)-----|                            |
-    |<--??(6)-|                     |                            |
-    |         |                     |                            |
-    |--??(7)->|                     |                            |
-    |         |                     |                            |
-    |         |----NS (DAC)-(8)---->|                            |
-    |         |     +------+        |                            |
-    |         |<DAO-| mesh |<--DAO--|                            |
-    |         |-DAO-| node |--DACK->|                            |
-    |         | ACK +------+        |                            |
-    |         |                     |-------JOIN ACK (9)-------->|
-    |         |                     |                            |
-    |         |                     |                            |
-    |================(10)==========>|----------6top----(11)----->|
-    |         |                     |          DTLS              |
-    |<===============(13)===========|<---------CoAP----(12)------|
-    |         |                     |        (many packets)      |
+      |         |                     |        (many packets)      |
 
 
                 Figure 1: Message sequence for JOIN message
 
 6.1.  explanation of each step
-
-
-
-
-
-
-
-Richardson               Expires April 29, 2015                [Page 12]
-
-Internet-Draft                 6tisch-6top                  October 2014
-
 
 6.1.1.  step (1): enhanced beacon
 
@@ -704,31 +711,29 @@ Internet-Draft                 6tisch-6top                  October 2014
    Assistant.  It could include 6CO options to help compress packets,
    and should contain a prefix appropriate for join traffic.
 
-6.1.4.  step (2): acquire authorizer key
+6.1.4.  step (2): certificate cache load
 
-   Step (4) will involve doing a public key encryption to node
-   performing the authorization management role.  In order to do this,
-   the new node needs to know the public key of the manager, and so in
-   this step it requests that certificate from the neighbour that that
-   it received the beacon from.
+   At step 10, the JCE will need to present a certificate chain anchored
+   at a trusted CA built into the joining node.  It has been speculated
+   that a significant amount of traffic could be avoided at step (10) if
+   the common parts of the certificate chains could be cached in the
+   join assistant.
 
-   This step is optional, and it's benefit has not been demonstrated by
-   a real world use case, but has been retained for now
-
-6.1.5.  step (3): receive authorizer key
-
-   the proxy neighbour sends the key in one or more messages, along with
-   the address of the authorizing server.  The address of the
-   authorization server could be an attribute of the certificate that is
-   received.
+   This optional step involves the joining node asking for certificates
+   from the join assistant.
 
 
 
 
-Richardson               Expires April 29, 2015                [Page 13]
+Richardson              Expires January 22, 2015               [Page 13]
 
-Internet-Draft                 6tisch-6top                  October 2014
+Internet-Draft                 6tisch-6top                     July 2014
 
+
+6.1.5.  step (3): receive certificate cache
+
+   the proxy neighbour sends requested cached certificates to the
+   joining node
 
 6.1.6.  step (4): join request
 
@@ -773,18 +778,18 @@ Internet-Draft                 6tisch-6top                  October 2014
 
 6.1.14.  step (13): Join Assistant forwards reply to JCE
 
+
+
+
+Richardson              Expires January 22, 2015               [Page 14]
+
+Internet-Draft                 6tisch-6top                     July 2014
+
+
    The JOIN Assistant, recognizing that the traffic came from the JOIN
    Network, restricts the destination that can be reached to the the JCE
    only.  It can do this in a stateless way, and it does NOT need to
    track the traffic at (10) to open pinhole, etc.
-
-
-
-
-Richardson               Expires April 29, 2015                [Page 14]
-
-Internet-Draft                 6tisch-6top                  October 2014
-
 
    Recognizing that the traffic came from the JOIN Network, the traffic
    would be placed into a bandwidth allocation (track?) that allows such
@@ -799,8 +804,8 @@ Internet-Draft                 6tisch-6top                  October 2014
    An end to end IPv6 CoAP/DTLS connection is created between the JCE
    and the Joining Node.  This connection carries 6top commands to
    update security parameters.  This results in either deployment of a
-   single-level, locally relevant certificate, or deployment of a
-   network-wide symmetric "Master Key"
+   single-level, locally relevant certificate (LDevID), or deployment of
+   a network-wide symmetric "Master Key"
 
 8.  deployment scenarios underlying protocol requirements
 
@@ -832,14 +837,9 @@ Internet-Draft                 6tisch-6top                  October 2014
 
 
 
-
-
-
-
-
-Richardson               Expires April 29, 2015                [Page 15]
+Richardson              Expires January 22, 2015               [Page 15]
 
-Internet-Draft                 6tisch-6top                  October 2014
+Internet-Draft                 6tisch-6top                     July 2014
 
 
 10.  slotframes to be used during join
@@ -885,18 +885,23 @@ Internet-Draft                 6tisch-6top                  October 2014
 
 19.  References
 
+
+
+
+
+
+
+
+
+Richardson              Expires January 22, 2015               [Page 16]
+
+Internet-Draft                 6tisch-6top                     July 2014
+
+
 19.1.  Normative references
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119, March 1997.
-
-
-
-
-Richardson               Expires April 29, 2015                [Page 16]
-
-Internet-Draft                 6tisch-6top                  October 2014
-
 
    [RFC6550]  Winter, T., Thubert, P., Brandt, A., Hui, J., Kelsey, R.,
               Levis, P., Pister, K., Struik, R., Vasseur, JP., and R.
@@ -915,13 +920,13 @@ Internet-Draft                 6tisch-6top                  October 2014
 
    [I-D.ietf-6tisch-coap]
               Sudhaakar, R. and P. Zand, "6TiSCH Resource Management and
-              Interaction using CoAP", draft-ietf-6tisch-coap-00 (work
-              in progress), May 2014.
+              Interaction using CoAP", draft-ietf-6tisch-coap-01 (work
+              in progress), July 2014.
 
    [I-D.ietf-6tisch-6top-interface]
               Wang, Q., Vilajosana, X., and T. Watteyne, "6TiSCH
               Operation Sublayer (6top) Interface", draft-ietf-6tisch-
-              6top-interface-00 (work in progress), March 2014.
+              6top-interface-01 (work in progress), July 2014.
 
    [I-D.ietf-6tisch-architecture]
               Thubert, P., Watteyne, T., and R. Assimiti, "An
@@ -929,10 +934,25 @@ Internet-Draft                 6tisch-6top                  October 2014
               802.15.4e", draft-ietf-6tisch-architecture-01 (work in
               progress), February 2014.
 
+   [I-D.irtf-nmrg-autonomic-network-definitions]
+              Behringer, M., Pritikin, M., Bjarnason, S., Clemm, A.,
+              Carpenter, B., Jiang, S., and L. Ciavaglia, "Autonomic
+              Networking - Definitions and Design Goals", draft-irtf-
+              nmrg-autonomic-network-definitions-00 (work in progress),
+              December 2013.
+
    [I-D.seitz-ace-problem-description]
               Seitz, L. and G. Selander, "Problem Description for
               Authorization in Constrained Environments", draft-seitz-
-              ace-problem-description-00 (work in progress), May 2014.
+              ace-problem-description-01 (work in progress), July 2014.
+
+
+
+
+Richardson              Expires January 22, 2015               [Page 17]
+
+Internet-Draft                 6tisch-6top                     July 2014
+
 
    [I-D.richardson-6tisch-idevid-cert]
               Richardson, M., "X509.v3 certificate extension for
@@ -944,21 +964,34 @@ Internet-Draft                 6tisch-6top                  October 2014
               Operation Sublayer (6top)", draft-wang-6tisch-6top-
               sublayer-00 (work in progress), February 2014.
 
-
-
-
-
-
-Richardson               Expires April 29, 2015                [Page 17]
-
-Internet-Draft                 6tisch-6top                  October 2014
-
+   [I-D.thubert-6lo-rfc6775-update-reqs]
+              Thubert, P., "Requirements for an update to 6LoWPAN ND",
+              draft-thubert-6lo-rfc6775-update-reqs-01 (work in
+              progress), June 2014.
 
 19.2.  Informative references
 
+   [RFC5280]  Cooper, D., Santesson, S., Farrell, S., Boeyen, S.,
+              Housley, R., and W. Polk, "Internet X.509 Public Key
+              Infrastructure Certificate and Certificate Revocation List
+              (CRL) Profile", RFC 5280, May 2008.
+
+   [RFC7252]  Shelby, Z., Hartke, K., and C. Bormann, "The Constrained
+              Application Protocol (CoAP)", RFC 7252, June 2014.
+
+   [RFC6347]  Rescorla, E. and N. Modadugu, "Datagram Transport Layer
+              Security Version 1.2", RFC 6347, January 2012.
+
    [I-D.thubert-6lowpan-backbone-router]
-              Thubert, P., "LoWPAN Backbone Router", draft-thubert-
-              6lowpan-backbone-router-00 (work in progress), March 2008.
+              Thubert, P., "6LoWPAN Backbone Router", draft-thubert-
+              6lowpan-backbone-router-03 (work in progress), February
+              2013.
+
+   [I-D.ietf-netconf-zerotouch]
+              Watsen, K., Hanna, S., Clarke, J., and M. Abrahamsson,
+              "Zero Touch Provisioning for NETCONF Call Home
+              (ZeroTouch)", draft-ietf-netconf-zerotouch-00 (work in
+              progress), July 2014.
 
    [I-D.kelsey-intarea-mesh-link-establishment]
               Kelsey, R., "Mesh Link Establishment", draft-kelsey-
@@ -966,6 +999,17 @@ Internet-Draft                 6tisch-6top                  October 2014
               February 2013.
 
    [I-D.ohba-6tisch-security]
+
+
+
+
+
+
+Richardson              Expires January 22, 2015               [Page 18]
+
+Internet-Draft                 6tisch-6top                     July 2014
+
+
               Chasko, S., Das, S., Lopez, R., Ohba, Y., Thubert, P., and
               A. Yegin, "Security Framework and Key Management Protocol
               Requirements for 6TiSCH", draft-ohba-6tisch-security-01
@@ -1005,4 +1049,16 @@ Author's Address
 
 
 
-Richardson               Expires April 29, 2015                [Page 18]
+
+
+
+
+
+
+
+
+
+
+
+
+Richardson              Expires January 22, 2015               [Page 19]
